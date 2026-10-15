@@ -19,11 +19,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
   const image = `${protocol}://${host}/og.png`;
   return {
-    title: "untitled — Student Command Center",
-    description: "Plan assignments, protect study time, and learn with an AI copilot.",
+    title: "School Dashboard",
+    description: "Assignments, grades, classes, schedules, and focus data.",
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-    openGraph: { title: "untitled — Student Command Center", description: "School day · in frame.", images: [image] },
-    twitter: { card: "summary_large_image", title: "untitled — Student Command Center", description: "School day · in frame.", images: [image] },
+    openGraph: { title: "School Dashboard", description: "Assignments, grades, classes, and study data.", images: [image] },
+    twitter: { card: "summary_large_image", title: "School Dashboard", description: "Assignments, grades, classes, and study data.", images: [image] },
   };
 }
 
