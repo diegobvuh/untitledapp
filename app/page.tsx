@@ -46,8 +46,8 @@ export default function Home() {
   return (
     <main className="viewport">
       <header className="ipad-bar">
-        <div className="app-name"><i>u</i><span>untitled</span></div>
-        <div className="drag-hint"><span>✦</span> drag anywhere to explore your school day</div>
+        <div className="app-name"><i>u</i><span>untitled</span><small>STUDY CAM · 01</small></div>
+        <div className="drag-hint"><span>● REC</span> DRAG TO NAVIGATE <b>SP</b><em>00:42:18</em></div>
         <div className="header-actions"><button aria-label="Notifications">♢<b /></button><div className="user-dot">DB</div></div>
       </header>
 
@@ -69,11 +69,11 @@ export default function Home() {
 
       <section className={`canvas ${dragging ? "dragging" : ""}`} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)} style={{ transform: `translate3d(${position.x}px, ${position.y}px, 0)` }}>
         <div className="zone home-zone">
-          <div className="zone-kicker"><span /> GOOD MORNING, DIEGO</div>
-          <h1>Everything you need,<br/><em>in one calm place.</em></h1>
+          <div className="zone-kicker"><span /> STANDBY · OCT 15 2026</div>
+          <h1>Everything you need,<br/><em>in one frame.</em></h1>
           <p className="intro">You have one important deadline tonight. We already made room for it.</p>
           <article className="now-card mint-card">
-            <div className="live-pill"><i /> NOW</div>
+            <div className="live-pill"><i /> REC · NOW</div>
             <div className="now-copy"><span>YOUR NEXT STEP</span><h2>Finish your Bio lab report</h2><p>Analysis + conclusion · about 80 minutes</p><div className="now-buttons"><button onClick={() => setReply("Focus mode is ready: 25 minutes of writing, a 5-minute reset, then one final 25-minute block.")}>Start focus</button><button onClick={() => ask("Help me plan my biology lab report")}>Plan with AI</button></div></div>
             <div className="progress-orb"><div><strong>72%</strong><span>ready</span></div></div>
           </article>
@@ -85,7 +85,7 @@ export default function Home() {
         </div>
 
         <div className="zone tasks-zone">
-          <div className="zone-title"><div><span>YOUR WORK</span><h2>Assignment garden</h2><p>Tap a circle when something is finished.</p></div><button className="round-add">＋</button></div>
+          <div className="zone-title"><div><span>MEMORY · ASSIGNMENT LOG</span><h2>Assignment index</h2><p>Tap a circle when something is finished.</p></div><button className="round-add">＋</button></div>
           <div className="task-stack">
             {assignments.map((item, index) => <article className={`task-card ${item.color} ${complete.includes(index) ? "finished" : ""}`} key={item.title}>
               <button className="task-check" onClick={() => setComplete((v) => v.includes(index) ? v.filter((n) => n !== index) : [...v,index])}>{complete.includes(index) ? "✓" : ""}</button>
@@ -97,7 +97,7 @@ export default function Home() {
         </div>
 
         <div className="zone plan-zone">
-          <div className="zone-title"><div><span>MAKE TIME</span><h2>Your gentle week</h2><p>A realistic plan with breathing room.</p></div><button onClick={downloadCalendar} className="calendar-connect">⌁ Apple Calendar</button></div>
+          <div className="zone-title"><div><span>PROGRAM AE · SCHEDULE</span><h2>Your week</h2><p>A realistic plan with breathing room.</p></div><button onClick={downloadCalendar} className="calendar-connect">⌁ Apple Calendar</button></div>
           <div className="week-row">
             {week.map(([day,date,event]) => <div className={day === "THU" ? "week-day today" : "week-day"} key={day}><span>{day}</span><b>{date}</b>{event && <div><i />{event}</div>}</div>)}
           </div>
@@ -109,7 +109,7 @@ export default function Home() {
 
         <div className="zone focus-zone">
           <div className="focus-room">
-            <span className="zone-kicker"><i /> QUIET ROOM</span>
+            <span className="zone-kicker"><i /> FOCUS MODE · MANUAL</span>
             <div className="timer-ring"><div><strong>25:00</strong><span>focus</span></div></div>
             <h2>One thing at a time.</h2><p>Your notifications are tucked away. Stay with the next paragraph.</p>
             <div className="focus-controls"><button>Ⅱ</button><button>＋ 5 min</button><button>End</button></div>

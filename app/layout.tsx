@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,13 +13,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "untitled — Student Command Center",
-  description: "Plan assignments, protect study time, and learn with an AI copilot.",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-  openGraph: { title: "untitled — Student Command Center", description: "Your school year, under control." },
-  twitter: { card: "summary", title: "untitled — Student Command Center", description: "Your school year, under control." },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("host") ?? "localhost:3000";
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+  const image = `${protocol}://${host}/og.png`;
+  return {
+    title: "untitled — Student Command Center",
+    description: "Plan assignments, protect study time, and learn with an AI copilot.",
+    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+    openGraph: { title: "untitled — Student Command Center", description: "School day · in frame.", images: [image] },
+    twitter: { card: "summary_large_image", title: "untitled — Student Command Center", description: "School day · in frame.", images: [image] },
+  };
+}
 
 export default function RootLayout({
   children,
