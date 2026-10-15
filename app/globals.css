@@ -113,3 +113,131 @@ body,.app-name,.dock button,.zone,.home-zone h1,.zone-title h2,.now-copy h2,.tas
 .canvas{width:3300px}.mini-map{width:194px;height:166px}.map-grid{height:108px;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:4px}.mini-map .map-grid button{font-size:5px;border-radius:14px}.mini-map .map-grid button:nth-child(1),.mini-map .map-grid button:nth-child(5),.mini-map .map-grid button:nth-child(9){border-radius:50%}.mini-map .map-grid button:nth-child(2),.mini-map .map-grid button:nth-child(6),.mini-map .map-grid button:nth-child(10){border-radius:999px}.mini-map .map-grid button:nth-child(3),.mini-map .map-grid button:nth-child(7){clip-path:polygon(12% 0,88% 0,100% 50%,88% 100%,12% 100%,0 50%);border-radius:0}.mini-map .map-grid button:nth-child(9){grid-column:2}.mini-map .map-stick{opacity:.78}.mini-map small{margin-top:4px}.user-dot{border:0;cursor:pointer}
 .connect-zone{left:2430px;top:1370px;overflow:hidden}.connect-head{display:flex;justify-content:space-between;align-items:flex-start}.connect-head>div:first-child>span{font:700 9px var(--font-geist-mono),monospace;color:#8390a0;letter-spacing:.09em}.connect-head h2{font-size:28px;margin:7px 0 3px}.connect-head p{font-size:9px;color:#718087;margin:0}.account-disc{width:72px;height:72px;border-radius:50%;display:grid;place-content:center;text-align:center;background:radial-gradient(circle at 35% 25%,#b6f6fa,#22a8ca 55%,#075970);border:2px solid white;box-shadow:0 0 0 2px #8e9da0,0 0 15px #32c3dd77;color:white}.account-disc strong{font-size:21px}.account-disc span{font:700 5px var(--font-geist-mono),monospace;letter-spacing:.08em}.connector-rack{display:grid;grid-template-columns:1fr 1fr;gap:9px 11px;margin-top:20px}.connector-rack button{height:72px;border:1px solid #aab8ba;background:linear-gradient(#fff,#dfe8e8);display:grid;grid-template-columns:42px 1fr 40px;align-items:center;gap:9px;padding:0 13px;border-radius:36px 13px 13px 36px;box-shadow:inset 0 1px white,0 3px 5px #4d626655;text-align:left;cursor:pointer}.connector-rack button:nth-child(even){border-radius:13px 36px 36px 13px}.connector-rack button:nth-child(3),.connector-rack button:nth-child(4){clip-path:polygon(7% 0,93% 0,100% 50%,93% 100%,7% 100%,0 50%);border-radius:0}.connector-rack button>i{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 25%,#b9f6fa,#20a8ca 58%,#07566e);color:white;border:2px solid white;font:800 10px Arial;font-style:normal;box-shadow:0 0 0 1px #829497}.connector-rack button>span{display:grid;gap:4px}.connector-rack button b{font-size:9px}.connector-rack button small{font-size:6px;color:#718085}.connector-rack button em{font:800 6px var(--font-geist-mono),monospace;color:#b16b3a;font-style:normal}.connector-rack button.connected em{color:#238a69}.connector-rack button.connected>i{background:radial-gradient(circle at 35% 25%,#c5f8e3,#48bd93 58%,#176a50)}.sync-tape{height:43px;margin-top:13px;padding:0 15px;display:flex;align-items:center;gap:9px;background:#071b24;border:2px solid #425a61;color:#87dce5;font:700 7px var(--font-geist-mono),monospace}.sync-tape b{color:white}.sync-tape i{width:7px;height:7px;border-radius:50%;background:#53cc99;box-shadow:0 0 7px #53cc99}.sync-tape small{margin-left:auto;color:#6f969e}
 @media(max-width:700px){.mini-map{width:184px;height:160px}.connect-zone{left:2090px;top:1280px;transform:scale(.88);transform-origin:top left}.canvas{width:2850px}.connector-rack button{padding-left:10px;padding-right:10px}}
+
+/* Header clock and dock orb sizing corrections */
+.ipad-bar .drag-hint{height:30px;padding:0 10px;gap:8px;font-size:7px;line-height:1;letter-spacing:.06em;white-space:nowrap}
+.ipad-bar .drag-hint em{font-size:9px;letter-spacing:.04em}
+.dock .dock-main{width:51px;height:51px;min-width:51px;min-height:51px;flex:0 0 51px;aspect-ratio:1}
+
+/* Mixed retro instrument housings */
+.home-zone{border-radius:34px 12px 34px 12px}
+.tasks-zone{border-radius:12px 42px 12px 42px}
+.plan-zone{clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,0 calc(100% - 18px),0 18px);border-radius:0}
+.plan-zone:before{display:none}
+.plan-zone .zone-title>div>span{display:none}
+.grades-zone{border-radius:52px 16px 16px 16px}
+.classes-zone{border-radius:14px 14px 52px 14px}
+.health-zone{border-radius:70px 18px 70px 18px}
+.activity-zone{border-radius:18px 70px 18px 70px}
+.life-zone{clip-path:polygon(32px 0,100% 0,100% calc(100% - 32px),calc(100% - 32px) 100%,0 100%,0 32px);border-radius:0}
+.connect-zone{border-radius:90px 20px 20px 20px}
+
+/* Long status rails: dense, useful readouts like vintage deck labels */
+.zone:after{left:28px;right:28px;bottom:10px;height:18px;padding:0 12px;display:flex;align-items:center;background:#071b24;border:1px solid #45616a;border-radius:2px;box-shadow:inset 0 0 9px #000;opacity:1;color:#7ce1ea;font:700 6px/1 var(--font-geist-mono),monospace;letter-spacing:.12em;white-space:nowrap;overflow:hidden}
+.zone:after{content:attr(data-status)}
+.zone:not([data-status]):after{display:none}
+
+.task-card:nth-child(1),.grade-card:nth-child(1){clip-path:polygon(0 0,94% 0,100% 50%,94% 100%,0 100%);border-radius:4px!important}
+.task-card:nth-child(2),.grade-card:nth-child(2){border-radius:38px 8px 8px 38px!important}
+.task-card:nth-child(3){clip-path:polygon(5% 0,100% 0,100% 100%,5% 100%,0 50%);border-radius:0!important}
+.data-strip,.health-note,.life-ticket,.sync-tape{min-height:38px;border-radius:19px 4px 19px 4px;letter-spacing:.08em}
+
+/* Information hierarchy + collision-safe compact type */
+.zone:not(.focus-zone){padding:25px 28px 40px}
+.zone-title h2,.connect-head h2{font-size:24px;line-height:1;margin:6px 0 4px}
+.home-zone h1{font-size:29px;line-height:1.05;margin:10px 0 6px}
+.intro{font-size:8px;line-height:1.35;margin:0 0 9px}
+.zone-kicker,.zone-title span,.now-copy>span,.plan-bottom article>span,.ai-top span{font-size:7px;line-height:1.2}
+.zone-title p,.connect-head p{font-size:8px;line-height:1.3}
+.now-card{height:157px;padding:17px 20px}
+.now-copy{max-width:410px}
+.now-copy h2{max-width:390px;font-size:17px;line-height:1.12;margin:6px 0 5px}
+.now-copy p{font-size:8px;line-height:1.35;margin:0}
+.now-buttons{margin-top:12px}.now-buttons button{padding:7px 10px;font-size:7px}
+.progress-orb{width:92px;height:92px;flex:0 0 92px}.progress-orb strong{font-size:20px}.progress-orb span{font-size:6px}
+
+.context-rail{height:29px;margin:0 0 9px;padding:3px 6px;display:flex;align-items:center;gap:4px;background:#071b24;border:1px solid #45616a;border-radius:15px 3px 15px 3px;box-shadow:inset 0 0 9px #000;font:700 6px var(--font-geist-mono),monospace;text-transform:uppercase;color:#72aeb6}
+.context-rail>span{padding:0 5px;color:#8fe5ea;letter-spacing:.12em}
+.context-rail button{height:21px;padding:0 8px;border:0;border-radius:11px;background:#17313a;color:#72949a;font-size:6px;text-transform:uppercase;cursor:pointer}
+.context-rail button.active{background:#b7f7c7;color:#12312b;box-shadow:0 0 7px #7fe3b166}
+.context-rail em{margin-left:auto;padding-right:5px;color:#efb16d;font-style:normal;letter-spacing:.1em}
+
+.small-stats{height:55px;display:flex;gap:7px;margin-top:9px}
+.small-stats button{min-width:0;flex:1;border:1px solid #c5d0d1;background:linear-gradient(#fff,#edf2f1);box-shadow:inset 0 1px white,0 2px 4px #6c7e8144;padding:6px 11px;text-align:left;cursor:pointer;color:#4b555a}
+.small-stats button:nth-child(1){border-radius:24px 5px 5px 24px}
+.small-stats button:nth-child(2){clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);border-radius:0}
+.small-stats button:nth-child(3){border-radius:5px 24px 24px 5px}
+.small-stats span{font-size:6px}.small-stats strong{display:block;font-size:13px;line-height:1;margin:2px 0}.small-stats p{font-size:6px;line-height:1;margin:0}
+
+.task-stack{gap:6px;margin-top:15px}.task-card{height:76px;padding:9px 15px;grid-template-columns:27px 1fr 40px;gap:9px}.task-card h3{font-size:11px;line-height:1.15;margin:2px 0 3px}.task-card p,.task-card>div>span{font-size:7px}.task-card>strong{font-size:9px}.task-check{width:23px;height:23px}.task-progress{margin-top:5px}.soft-note{height:35px;margin-top:8px;padding:0 12px}.soft-note>span{font-size:13px}.soft-note strong{font-size:7px}.soft-note p{font-size:6px}
+
+.week-row{margin-top:17px;gap:5px}.week-day{height:126px;padding:10px 6px}.week-day>b{margin:5px auto 13px}.plan-bottom{gap:8px;margin-top:10px}.plan-bottom article{min-height:105px;padding:11px 13px}.plan-bottom h3{font-size:12px;margin:4px 0}.plan-bottom p{font-size:7px;margin:4px 0}.calendar-connect{transform:scale(.9);transform-origin:top right}
+.grade-grid{gap:8px;margin-top:17px}.grade-card{height:112px;padding:12px}.grade-card>strong{font-size:28px}.grade-footer{margin-top:9px}.grade-footer>div{padding:7px 9px}.grade-footer strong{font-size:13px}
+.class-list{gap:6px;margin-top:16px}.class-row{height:61px}.class-row strong{font-size:10px}.class-row time{font-size:11px}.data-strip{height:33px;min-height:33px;margin-top:8px}
+.bar-chart{height:190px;margin-top:17px}.workload-stats>div{padding:8px}.workload-stats strong{font-size:13px}
+.health-dials{height:166px;margin:10px 0 8px}.dial{width:115px;height:115px}.water-gauge{height:126px}.habit-track span{font-size:6px}.health-note{height:35px;min-height:35px;margin-top:9px}
+.life-layout{margin-top:12px}.day-rail{height:262px}.quick-wheel{width:194px;height:194px;margin-top:23px}.quick-wheel button{width:55px;height:55px}.quick-wheel button:nth-child(1){left:70px}.quick-wheel button:nth-child(2){top:69px}.quick-wheel button:nth-child(3){left:70px}.quick-wheel button:nth-child(4){top:69px}.quick-wheel>div{inset:62px}.life-ticket{height:48px;min-height:48px;margin-top:8px;grid-template-columns:84px 1fr 62px 94px}
+.connector-rack{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 9px;margin-top:13px}.connector-rack button{min-width:0;height:64px;grid-template-columns:36px minmax(0,1fr) 42px;gap:7px;padding:0 9px}.connector-rack button>i{width:34px;height:34px}.connector-rack button>span{min-width:0}.connector-rack button b,.connector-rack button small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.connector-rack button b{font-size:8px}.connector-rack button small{font-size:6px}.connector-rack button em{font-size:5.5px;text-align:right}.sync-tape{height:35px;min-height:35px;margin-top:9px}
+.life-ticket>span{white-space:nowrap;font-size:5.5px}
+.account-actions{margin-top:7px}.account-actions a{display:inline-flex;height:24px;align-items:center;padding:0 11px;border-radius:12px 3px 12px 3px;background:#0a2732;border:1px solid #47717c;color:#8fe5ea;font:700 6px var(--font-geist-mono),monospace;text-decoration:none;text-transform:uppercase;letter-spacing:.08em}
+.focus-zone:after{display:none}
+
+@media(max-width:700px){.zone-title h2,.connect-head h2{font-size:22px}.home-zone h1{font-size:26px}.context-rail button{padding:0 6px}}
+
+/* Navigator mirrors the physical monitor wall: 3 + 3 + 4. */
+.mini-map .map-grid .map-home-node{grid-column:1!important;grid-row:1}.mini-map .map-grid .map-tasks-node{grid-column:2!important;grid-row:1}.mini-map .map-grid .map-grades-node{grid-column:3!important;grid-row:1}
+.mini-map .map-grid .map-plan-node{grid-column:1!important;grid-row:2}.mini-map .map-grid .map-focus-node{grid-column:2!important;grid-row:2}.mini-map .map-grid .map-classes-node{grid-column:3!important;grid-row:2}
+.mini-map .map-grid .map-health-node{grid-column:1!important;grid-row:3}.mini-map .map-grid .map-workload-node{grid-column:2!important;grid-row:3}.mini-map .map-grid .map-life-node{grid-column:3!important;grid-row:3}.mini-map .map-grid .map-connect-node{grid-column:4!important;grid-row:3}
+.mini-map .map-grid .map-home-node,.mini-map .map-grid .map-focus-node,.mini-map .map-grid .map-life-node{border-radius:50%}
+.mini-map .map-grid .map-tasks-node,.mini-map .map-grid .map-classes-node,.mini-map .map-grid .map-connect-node{border-radius:999px}
+.mini-map .map-grid .map-grades-node,.mini-map .map-grid .map-health-node{clip-path:polygon(12% 0,88% 0,100% 50%,88% 100%,12% 100%,0 50%);border-radius:0}
+
+/* Useful motion feedback: selected monitor, state change, and live instruments. */
+.mini-map .map-grid button.active{background:linear-gradient(#71e3f0,#168ca9);color:#fff;border-color:#c8fbff;box-shadow:0 0 0 1px #fff,0 0 10px #5fe6f2;animation:navLock 1.8s ease-in-out infinite}
+.dock button.active{box-shadow:0 0 0 2px #63d8e8,0 0 12px #31b9dd88!important}
+.context-rail button.active{animation:contextConfirm .35s cubic-bezier(.16,1,.3,1)}
+.zone[data-status]:after{animation:statusGlow 3.2s ease-in-out infinite}
+.task-card.finished{animation:taskDone .38s cubic-bezier(.16,1,.3,1) both}
+.health-score{animation:instrumentPulse 3s ease-in-out infinite}
+.water-gauge>b:after{content:"";position:absolute;left:-15%;right:-15%;top:-5px;height:10px;border-radius:50%;background:#baf8ff88;animation:waterWave 2.4s ease-in-out infinite}
+@keyframes navLock{50%{filter:brightness(1.12);box-shadow:0 0 0 1px #fff,0 0 15px #73edf7}}
+@keyframes contextConfirm{from{transform:scale(.82)}to{transform:scale(1)}}
+@keyframes statusGlow{0%,100%{border-color:#45616a;color:#7ce1ea}50%{border-color:#70d7e2;color:#b8f8fb}}
+@keyframes taskDone{0%{transform:translateX(0)}45%{transform:translateX(7px)}100%{transform:translateX(0);opacity:.55}}
+@keyframes instrumentPulse{50%{filter:brightness(1.1);box-shadow:0 0 0 2px #9aa8aa,0 0 22px #24badbaa}}
+@keyframes waterWave{0%,100%{transform:translateX(-5%) scaleY(.75)}50%{transform:translateX(5%) scaleY(1.15)}}
+
+/* Phone mode keeps one complete monitor in view and uses mobile-specific anchors. */
+@media(max-width:700px){
+  :root{--phone-monitor-scale:.58}
+  .ipad-bar{height:48px;padding:0 10px}.app-name{gap:6px}.app-name i{width:29px;height:29px}.app-name span{font-size:9px}.app-name small{display:none}.header-actions{gap:6px}.header-actions button,.user-dot{width:30px;height:30px}
+  .canvas{width:2760px;height:1810px}
+  .zone,.focus-zone,.health-zone,.life-zone,.connect-zone{animation:none!important;transform:scale(var(--phone-monitor-scale))!important;transform-origin:top left!important}
+  .home-zone,.plan-zone,.health-zone{left:170px}.tasks-zone,.focus-zone,.activity-zone{left:810px}.grades-zone,.classes-zone,.life-zone{left:1450px}.connect-zone{left:2090px}
+  .home-zone,.tasks-zone,.grades-zone{top:250px}.plan-zone,.focus-zone,.classes-zone{top:810px}.health-zone,.activity-zone,.life-zone,.connect-zone{top:1280px}
+  .zone-kicker,.zone-title span,.now-copy>span,.plan-bottom article>span,.ai-top span{font-size:9px}.zone-title p,.connect-head p,.intro{font-size:10px}.task-card p,.task-card>div>span,.week-day>span,.plan-bottom p{font-size:9px}.connector-rack button small{font-size:8px}
+  .dock{left:9px;right:9px;bottom:8px;width:auto;height:58px;transform:none;justify-content:center;padding:5px 8px}.dock button{height:45px}.dock .dock-main{width:45px;height:45px;min-width:45px;min-height:45px;flex-basis:45px}
+  .mini-map{display:block;right:8px;bottom:76px;width:176px;height:154px;padding:7px 8px 6px}.map-grid{height:99px}.mini-map small{margin-top:3px}.mini-map .map-stick{left:7px;top:28px}
+}
+@media(max-width:370px){:root{--phone-monitor-scale:.53}}
+@media(min-width:420px) and (max-width:499px){:root{--phone-monitor-scale:.63}}
+@media(min-width:500px) and (max-width:599px){:root{--phone-monitor-scale:.74}}
+@media(min-width:600px) and (max-width:700px){:root{--phone-monitor-scale:.89}}
+
+.task-stack:empty,.empty-instrument{min-height:232px;display:grid;grid-template-columns:1fr;place-content:center;text-align:center;background:#061820;border:3px solid #2e4b54;box-shadow:inset 0 0 0 2px #020a0d,inset 0 0 22px #000;color:#78cbd5}
+.task-stack:empty:before{content:"0 ASSIGNMENTS";font:800 13px var(--font-geist-mono),monospace;letter-spacing:.12em}
+.empty-instrument strong{font:800 48px var(--font-geist-mono),monospace;color:#9af4fb;text-shadow:0 0 12px #2bc2dc}.empty-instrument span{font:700 8px var(--font-geist-mono),monospace;letter-spacing:.14em}
+.empty-day{grid-template-rows:12px 1fr 12px}
+.mini-map{cursor:default}.map-hit-area{position:absolute;left:9px;right:9px;top:30px;height:108px;z-index:5;touch-action:none;cursor:crosshair}.map-hit-area:active{cursor:grabbing}.mini-map .map-stick{z-index:6}
+@media(max-width:700px){.map-hit-area{left:8px;right:8px;top:29px;height:99px}}
+
+/* Keep Health in its original instrument style. */
+.health-zone{border-radius:22px}
+.health-dials{height:182px;margin:15px 0 10px;padding:12px 22px}
+.health-dials .dial{width:126px;height:126px}
+.health-dials .water-gauge{height:140px}
+.health-zone .habit-track span{font-size:7px}
+.health-zone .health-note{height:42px;min-height:42px;margin-top:13px;border-radius:0;letter-spacing:normal}
+.health-zone .health-score{animation:none}
+.health-zone .water-gauge>b:after{display:none}
+@media(max-width:700px){.health-dials{padding-left:12px;padding-right:12px}}
