@@ -15,6 +15,13 @@
       "when": 1792079654167,
       "tag": "0001_volatile_mattie_franklin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792082535673,
+      "tag": "0002_solid_gravity",
+      "breakpoints": true
     }
   ]
 }

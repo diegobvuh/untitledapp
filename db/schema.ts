@@ -11,3 +11,9 @@ export const assignments = sqliteTable("assignments", {
   completed: integer("completed", { mode: "boolean" }).notNull().default(false),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(new Date()),
 }, (table) => [index("idx_assignments_completed_due").on(table.completed, table.dueAt)]);
+
+export const userSettings = sqliteTable("user_settings", {
+  userId: text("user_id").primaryKey(),
+  state: text("state").notNull().default("{}"),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull().default(new Date()),
+});
