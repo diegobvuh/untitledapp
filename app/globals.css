@@ -1149,3 +1149,47 @@ html,body,button,input,textarea,select,
 .ai-phone>header>span{font-size:7px!important}.ai-phone>header h2{font-size:22px!important}.ai-phone>header small{font-size:6.5px!important}.phone-welcome strong{font-size:17px!important}.phone-welcome p,.phone-chat article p,.phone-input textarea{font-size:10px!important}.phone-chat article>span{font-size:6px!important}.phone-prompts button{font-size:7px!important}.ai-phone>footer{font-size:6.5px!important}
 .task-composer>span,.task-composer label,.focus-session span,.focus-session small{font-size:7px!important}
 @media(max-width:700px){.home-zone h1{font-size:29px!important}.zone-title h2,.connect-head h2{font-size:23px!important}.dock button>b{font-size:6px!important}.dock button>small{font-size:4.8px!important}.cockpit-readout strong{font-size:9px!important}}
+
+/* Canonical monitor wall: every panel owns a non-overlapping coordinate. */
+.canvas{width:6700px!important;height:3500px!important}
+.home-zone{left:300px!important;top:500px!important}
+.tasks-zone{left:1250px!important;top:260px!important}.deadlines-zone{left:1980px!important;top:260px!important}.exams-zone{left:2710px!important;top:260px!important}
+.classes-zone{left:1250px!important;top:850px!important}.grades-zone{left:1980px!important;top:850px!important}.notes-zone{left:2810px!important;top:850px!important}
+.plan-zone{left:3800px!important;top:260px!important}.focus-zone{left:4780px!important;top:260px!important}.goals-zone{left:5510px!important;top:260px!important}
+.progress-zone{left:3800px!important;top:850px!important}.capture-zone{left:4530px!important;top:850px!important}
+.plan-strip{left:3800px!important;top:1450px!important;width:1710px!important}
+.health-zone{left:1250px!important;top:1900px!important}.routines-zone{left:1980px!important;top:1900px!important}.activity-zone{left:2520px!important;top:1900px!important}
+.life-zone{left:1250px!important;top:2650px!important}.connect-zone{left:3050px!important;top:2650px!important}.status-zone{left:3780px!important;top:2650px!important}
+
+/* Mobile Safari: stable viewport sizing, safe areas, and finger-sized controls. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;height:100%;height:-webkit-fill-available}
+body{min-height:100%;min-height:-webkit-fill-available;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+.viewport,.auth-gate{height:100vh;height:100dvh;min-height:-webkit-fill-available}
+.viewport{-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+button,input,textarea,select{touch-action:manipulation}
+.phone-chat{-webkit-overflow-scrolling:touch}
+
+@media(max-width:700px){
+  .canvas{width:4720px!important;height:3050px!important}
+  .home-zone{left:170px!important;top:430px!important}
+  .tasks-zone{left:950px!important;top:210px!important}.deadlines-zone{left:1530px!important;top:210px!important}.exams-zone{left:2110px!important;top:210px!important}
+  .classes-zone{left:950px!important;top:700px!important}.grades-zone{left:1530px!important;top:700px!important}.notes-zone{left:2110px!important;top:700px!important}
+  .plan-zone{left:2680px!important;top:210px!important}.focus-zone{left:3310px!important;top:210px!important}.goals-zone{left:3890px!important;top:210px!important}
+  .progress-zone{left:2680px!important;top:700px!important}.capture-zone{left:3310px!important;top:700px!important}
+  .health-zone{left:950px!important;top:1580px!important}.routines-zone{left:1530px!important;top:1580px!important}.activity-zone{left:2040px!important;top:1580px!important}
+  .life-zone{left:950px!important;top:2250px!important}.connect-zone{left:2680px!important;top:2250px!important}.status-zone{left:3310px!important;top:2250px!important}
+  .ipad-bar{top:max(9px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}
+  .dock{bottom:max(9px,env(safe-area-inset-bottom))!important;padding-left:max(8px,env(safe-area-inset-left))!important;padding-right:max(8px,env(safe-area-inset-right))!important}
+  .nav-launcher{right:max(14px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom))}
+  .neighborhood-map{right:max(10px,env(safe-area-inset-right))!important;bottom:calc(88px + env(safe-area-inset-bottom))!important}
+  .composer-shade{padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+  .task-composer{max-height:calc(100dvh - 16px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .ai-phone-popover{height:calc(100dvh - 108px)!important;bottom:calc(91px + env(safe-area-inset-bottom))!important}
+  .task-composer input,.task-composer select,.phone-input textarea,.account-actions input,.ask-row input{font-size:16px!important}
+}
+
+@media(max-height:500px) and (pointer:coarse){
+  .ipad-bar{top:max(5px,env(safe-area-inset-top));height:42px;min-height:42px}
+  .dock{height:58px!important}
+  .ai-phone-popover{top:max(6px,env(safe-area-inset-top));bottom:calc(70px + env(safe-area-inset-bottom))!important;height:auto!important}
+}

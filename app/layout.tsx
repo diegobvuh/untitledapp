@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -21,11 +21,23 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Money OS — Personal Finance Command Center",
     description: "A private, age-aware command center for accounts, spending, income, savings, and smarter money decisions.",
-    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+    applicationName: "Money OS",
+    manifest: "/site.webmanifest",
+    formatDetection: { telephone: false, email: false, address: false },
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Money OS" },
+    icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/og.png" },
     openGraph: { title: "Money OS", description: "See every account. Understand every dollar. Build your next move.", images: [image] },
     twitter: { card: "summary_large_image", title: "Money OS", description: "Your private personal finance command center.", images: [image] },
   };
 }
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#06171e",
+};
 
 export default function RootLayout({
   children,
