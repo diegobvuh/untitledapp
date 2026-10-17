@@ -2,8 +2,14 @@ import { env } from "cloudflare:workers";
 
 type AssistantRequest = {
   message?: string;
-  context?: { activeContext?: string; remaining?: number; water?: number; habits?: boolean[] };
+  history?: Array<{ role?: "user" | "assistant"; text?: string }>;
+  context?: Record<string, unknown>;
 };
+
+export async function GET() {
+  const runtime = env as unknown as Record<string, string | undefined>;
+  return Response.json({ configured: Boolean(runtime.OPENAI_API_KEY), model: runtime.OPENAI_MODEL || "gpt-5.4-mini" });
+}
 
 export async function POST(request: Request) {
   const body = await request.json<AssistantRequest>();
@@ -20,8 +26,12 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: runtime.OPENAI_MODEL || "gpt-5.4-mini",
       store: false,
-      instructions: "You are a concise student dashboard assistant. Balance school deadlines with health and personal obligations. Give one clear next action, then at most two short supporting steps. Never claim access to data not included in the request.",
-      input: `Dashboard context: ${JSON.stringify(body.context || {})}\nStudent: ${message}`,
+      instructions: "You are Money Coach, a warm, concise financial education assistant inside a private personal-finance dashboard. The user is 17. Help them understand their supplied numbers, make a simple budget, save, compare purchases, and find safe realistic ways to earn. Lead with one clear next step and at most three short supporting points. Never promise profit, glamorize speculation, recommend leverage, day trading, gambling, crypto speculation, or evading parent/guardian and age requirements. Clearly distinguish education from individualized financial, tax, or legal advice. Encourage a trusted adult for accounts, contracts, borrowing, investing, taxes, or large irreversible decisions. Never claim access to data that was not included, and never imply you can move money or place trades.",
+      input: [
+        { role: "developer", content: `Current dashboard context: ${JSON.stringify(body.context || {})}` },
+        ...(body.history || []).slice(-8).filter(item => item.text && (item.role === "user" || item.role === "assistant")).map(item => ({ role: item.role!, content: item.text! })),
+        { role: "user", content: message },
+      ],
     }),
   });
 

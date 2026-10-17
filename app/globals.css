@@ -179,7 +179,7 @@ body,.app-name,.dock button,.zone,.home-zone h1,.zone-title h2,.now-copy h2,.tas
 .life-layout{margin-top:12px}.day-rail{height:262px}.quick-wheel{width:194px;height:194px;margin-top:23px}.quick-wheel button{width:55px;height:55px}.quick-wheel button:nth-child(1){left:70px}.quick-wheel button:nth-child(2){top:69px}.quick-wheel button:nth-child(3){left:70px}.quick-wheel button:nth-child(4){top:69px}.quick-wheel>div{inset:62px}.life-ticket{height:48px;min-height:48px;margin-top:8px;grid-template-columns:84px 1fr 62px 94px}
 .connector-rack{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 9px;margin-top:13px}.connector-rack button{min-width:0;height:64px;grid-template-columns:36px minmax(0,1fr) 42px;gap:7px;padding:0 9px}.connector-rack button>i{width:34px;height:34px}.connector-rack button>span{min-width:0}.connector-rack button b,.connector-rack button small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.connector-rack button b{font-size:8px}.connector-rack button small{font-size:6px}.connector-rack button em{font-size:5.5px;text-align:right}.sync-tape{height:35px;min-height:35px;margin-top:9px}
 .life-ticket>span{white-space:nowrap;font-size:5.5px}
-.account-actions{margin-top:7px}.account-actions a{display:inline-flex;height:24px;align-items:center;padding:0 11px;border-radius:12px 3px 12px 3px;background:#0a2732;border:1px solid #47717c;color:#8fe5ea;font:700 6px var(--font-geist-mono),monospace;text-decoration:none;text-transform:uppercase;letter-spacing:.08em}
+.account-actions{display:flex;gap:5px;margin-top:7px}.account-actions a,.account-actions button{display:inline-flex;height:24px;align-items:center;padding:0 11px;border-radius:12px 3px 12px 3px;background:#0a2732;border:1px solid #47717c;color:#8fe5ea;font:700 6px var(--font-geist-mono),monospace;text-decoration:none;text-transform:uppercase;letter-spacing:.08em;cursor:pointer}.account-actions input{width:142px;height:24px;padding:0 8px;border:1px solid #718589;border-radius:3px;background:#f5f8f7;color:#26373c;font-size:7px;outline:none}.account-actions input:focus{border-color:#29aac8;box-shadow:0 0 0 2px #66d5e844}
 .focus-zone:after{display:none}
 
 @media(max-width:700px){.zone-title h2,.connect-head h2{font-size:22px}.home-zone h1{font-size:26px}.context-rail button{padding:0 6px}}
@@ -219,6 +219,62 @@ body,.app-name,.dock button,.zone,.home-zone h1,.zone-title h2,.now-copy h2,.tas
   .dock{left:9px;right:9px;bottom:8px;width:auto;height:58px;transform:none;justify-content:center;padding:5px 8px}.dock button{height:45px}.dock .dock-main{width:45px;height:45px;min-width:45px;min-height:45px;flex-basis:45px}
   .mini-map{display:block;right:8px;bottom:76px;width:176px;height:154px;padding:7px 8px 6px}.map-grid{height:99px}.mini-map small{margin-top:3px}.mini-map .map-stick{left:7px;top:28px}
 }
+
+/* The radar close control is a real button so dragging cannot swallow its click. */
+.neighborhood-map .map-head>button{flex:0 0 20px;width:20px;height:20px;padding:0;border:1px solid #64bcae;border-radius:50%;background:linear-gradient(#e9fffa,#8ce2cb);box-shadow:inset 0 1px #fff,0 1px 2px #234;color:#176d65;font:900 13px/18px Arial,sans-serif;cursor:pointer;pointer-events:auto}
+.neighborhood-map .map-head>button:hover{filter:brightness(1.08);transform:rotate(90deg)}
+.neighborhood-map .map-head>button:active{transform:rotate(90deg) scale(.88)}
+
+/* System settings live in their own remote neighborhood. */
+.connect-zone{left:3300px;top:2840px}
+@media(max-width:700px){.connect-zone{left:3200px;top:2300px}}
+
+/* Interaction pass: same hardware theme, clearer map targets, smoother travel. */
+.canvas{transition:transform .62s cubic-bezier(.22,1,.36,1)}
+.canvas.dragging{transition:none}
+.neighborhood-map .map-hit-area{z-index:3}
+.neighborhood-map .full-monitor-map .monitor-waypoint{z-index:5!important;width:42px!important;height:20px!important;padding:0 3px!important;border-color:#5d7e87!important;background:linear-gradient(#183b46,#102a33)!important;color:#a5d9df!important;font-size:4.5px!important;font-weight:800!important;letter-spacing:.015em!important;box-shadow:inset 0 1px #35616b,0 2px 4px #0007;pointer-events:auto}
+.neighborhood-map .full-monitor-map .monitor-waypoint:hover,.neighborhood-map .full-monitor-map .monitor-waypoint:focus-visible{background:linear-gradient(#42c7dc,#147d99)!important;color:#fff!important;outline:1px solid #c9fbff;transform:translate(-50%,-50%) scale(1.08)!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint.active{background:linear-gradient(#71e3f0,#168ca9)!important;color:#fff!important}
+.neighborhood-map .district-name{z-index:4;height:9px;padding:0 4px;border-radius:2px;background:#0b2028dd;font-size:3.8px!important;letter-spacing:.06em!important}
+.neighborhood-map .map-stick{z-index:6;transition:transform .42s cubic-bezier(.22,1,.36,1)}
+.neighborhood-map small{letter-spacing:.06em}
+
+.composer-shade{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:18px;background:#031017b8;backdrop-filter:blur(5px)}
+.task-composer{width:min(430px,calc(100vw - 28px));padding:28px;border:2px solid #e9efed;border-bottom-color:#68777a;border-radius:22px;background:linear-gradient(145deg,#e9ece9,#9ca6a6);box-shadow:0 4px 0 #596568,0 24px 70px #000c;color:#253238}
+.task-composer>span{font:800 7px var(--font-geist-mono),monospace;letter-spacing:.16em;color:#53666b}.task-composer h2{margin:8px 0 20px;font:500 25px Georgia,serif}.task-composer>div{display:grid;grid-template-columns:1fr 1fr;gap:9px}.task-composer label{display:grid;gap:5px;margin:9px 0;font:800 7px var(--font-geist-mono),monospace;letter-spacing:.1em;color:#4c6066}.task-composer input{width:100%;height:39px;padding:0 11px;border:1px solid #829194;border-radius:8px;background:#f8faf9;color:#253238;font:700 10px var(--font-geist-mono),monospace;outline:none}.task-composer input:focus{border-color:#159fbe;box-shadow:0 0 0 2px #65d8e855}.task-composer footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.task-composer button,.focus-session button{height:34px;padding:0 14px;border:1px solid #fff;border-bottom-color:#718083;border-radius:9px;background:linear-gradient(#fff,#dbe4e4);box-shadow:0 2px 0 #768487;color:#27383e;font:800 8px var(--font-geist-mono),monospace;cursor:pointer}.task-composer footer button:last-child{background:linear-gradient(#55c9dd,#168ba8);color:#fff}.task-composer button:disabled{opacity:.45;cursor:not-allowed}
+.focus-session{position:fixed;z-index:55;left:18px;bottom:88px;width:190px;padding:12px 13px;display:grid;grid-template-columns:1fr auto;gap:3px 8px;border:2px solid #48636b;border-radius:12px;background:#071b24;color:#94e9ef;box-shadow:inset 0 0 14px #000,0 10px 28px #0009}.focus-session span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em}.focus-session strong{grid-row:1/3;grid-column:2;font:800 18px var(--font-geist-mono),monospace;color:#fff}.focus-session small{max-width:105px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;color:#7199a1}.focus-session button{grid-column:1/3;height:25px;margin-top:5px;background:linear-gradient(#173f49,#0c2831);border-color:#41636c;color:#8fe8ef;box-shadow:none}
+
+@media(max-width:700px){.neighborhood-map .full-monitor-map .monitor-waypoint{width:38px!important;height:18px!important;font-size:4px!important}.task-composer{padding:22px}.focus-session{left:10px;bottom:76px}}
+
+/* Primary radar navigation — same camera hardware, now a continuous circular control. */
+.neighborhood-map{width:266px!important;height:304px!important;padding:10px 14px 12px!important;border-radius:34px!important;cursor:default!important}
+.neighborhood-map .map-head{height:30px;padding:0 8px}.neighborhood-map .map-head span{border:0!important;background:transparent!important;padding:0!important;color:#168da8;font-size:7px}.neighborhood-map .map-head b{font-size:6px;text-align:center}.neighborhood-map .map-head em{font-size:8px;color:#4fd2aa}
+.neighborhood-map .full-monitor-map{position:relative;width:224px;height:224px!important;margin:0 auto;padding:0!important;overflow:hidden;border:3px inset #849497!important;border-radius:50%!important;background-color:#061820!important;background-image:radial-gradient(circle,transparent 0 24%,#4f778044 25% 25.7%,transparent 26% 48%,#4f778044 49% 49.7%,transparent 50%),linear-gradient(90deg,transparent 49.5%,#4f778044 50%,transparent 50.5%),linear-gradient(transparent 49.5%,#4f778044 50%,transparent 50.5%)!important;background-size:auto!important;box-shadow:inset 0 0 22px #000,0 0 0 2px #becacb,0 4px 9px #30494f77!important}
+.neighborhood-map .full-monitor-map:before{content:"";display:block!important;position:absolute;inset:9px;border:1px solid #4e7d8666;border-radius:50%;pointer-events:none}
+.neighborhood-map .radar-sweep{position:absolute;z-index:2;left:21px;top:52px;width:208px;height:208px;border-radius:50%;overflow:hidden;pointer-events:none;animation:radarSpin 4.8s linear infinite;background:conic-gradient(from 0deg,transparent 0 78%,#55dce522 90%,#7ff3fa88 99%,transparent 100%);filter:drop-shadow(0 0 4px #4bd7e5)}
+.neighborhood-map .map-hit-area{left:21px!important;top:52px!important;width:208px!important;height:208px!important;border-radius:50%;cursor:crosshair!important}
+.neighborhood-map .map-stick{left:20px!important;top:51px!important;width:24px!important;height:24px!important;z-index:8!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint{z-index:6!important;width:40px!important;height:18px!important;font-size:4px!important}
+.neighborhood-map .district-name{z-index:5!important;color:#78aab3!important;background:#081c24d9!important;border-color:#32515a!important}
+.neighborhood-map>small{margin-top:8px!important;font-size:5.5px!important;color:#47727a!important}
+
+/* Money OS additions reuse the original hardware controls. */
+.task-composer select{width:100%;height:39px;padding:0 11px;border:1px solid #829194;border-radius:8px;background:#f8faf9;color:#253238;font:700 10px var(--font-geist-mono),monospace;outline:none}
+.class-row small{display:block;margin-top:4px;font-size:6px;letter-spacing:.08em;color:#698086}.class-row time{margin-left:auto}.task-card>strong{white-space:nowrap}
+@keyframes radarSpin{to{transform:rotate(360deg)}}
+
+/* Useful status strip: location, live work state, capture, tasks, account. */
+.ipad-bar{min-height:48px;align-items:center}.header-location{position:absolute;left:50%;top:7px;transform:translateX(-50%);min-width:210px;height:34px;display:grid;grid-template-columns:auto auto;align-content:center;justify-content:center;column-gap:8px;padding:0 14px;border:1px solid #8d9b9d;border-radius:11px 3px 11px 3px;background:linear-gradient(#f4f7f6,#cbd5d5);box-shadow:inset 0 1px #fff,0 2px 3px #00101755;color:#34464c}.header-location span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em;color:#1587a3}.header-location strong{font-size:9px}.header-location small{grid-column:1/3;text-align:center;font:700 5px var(--font-geist-mono),monospace;letter-spacing:.08em;color:#64767b}.header-actions>button:first-child{font-size:18px;color:#188ca8}
+
+/* Monitor positions are fixed system geometry; no edit grid or drag grips remain. */
+.layout-edit{background-image:none!important}.layout-edit .zone:before,.layout-edit .zone:after{display:none!important}
+
+@media(max-width:700px){
+  .neighborhood-map{right:10px!important;bottom:78px!important;width:224px!important;height:260px!important;padding:8px 11px 10px!important}
+  .neighborhood-map .full-monitor-map{width:188px;height:188px!important}.neighborhood-map .radar-sweep{left:18px;top:45px;width:174px;height:174px}.neighborhood-map .map-hit-area{left:18px!important;top:45px!important;width:174px!important;height:174px!important}.neighborhood-map .map-stick{left:17px!important;top:44px!important;width:22px!important;height:22px!important}
+  .header-location{min-width:145px;max-width:42vw;padding:0 8px}.header-location small{font-size:4.5px}.drag-hint{max-width:92px;overflow:hidden}.neighborhood-map .full-monitor-map .monitor-waypoint{width:34px!important;height:16px!important;font-size:3.5px!important}
+}
 @media(max-width:370px){:root{--phone-monitor-scale:.53}}
 @media(min-width:420px) and (max-width:499px){:root{--phone-monitor-scale:.63}}
 @media(min-width:500px) and (max-width:599px){:root{--phone-monitor-scale:.74}}
@@ -241,3 +297,855 @@ body,.app-name,.dock button,.zone,.home-zone h1,.zone-title h2,.now-copy h2,.tas
 .health-zone .health-score{animation:none}
 .health-zone .water-gauge>b:after{display:none}
 @media(max-width:700px){.health-dials{padding-left:12px;padding-right:12px}}
+
+/* Readability and collision fixes; visual theme intentionally unchanged. */
+.app-name{gap:7px;min-width:0}
+.app-name span{font-size:12px;line-height:1;letter-spacing:-.02em}
+.app-name small{font-size:7px;white-space:nowrap}
+.zone-title>div,.connect-head>div:first-child,.now-copy{min-width:0}
+.zone-title h2,.connect-head h2,.now-copy h2{overflow-wrap:anywhere}
+.zone-title p,.connect-head p,.intro,.now-copy p{font-size:9px}
+.zone-kicker,.zone-title span,.now-copy>span,.plan-bottom article>span,.ai-top span{font-size:8px}
+.task-card p,.task-card>div>span,.plan-bottom p,.connector-rack button small,.soft-note p{font-size:7px}
+.connector-rack button b{font-size:9px}
+.connector-rack button em{font-size:6px}
+.connect-head p{max-width:410px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-actions{flex-wrap:wrap}
+.account-actions input{min-width:0;flex:1 1 142px}
+.sync-tape{min-width:0;overflow:hidden}
+.sync-tape span,.sync-tape b{white-space:nowrap}
+.sync-tape small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.life-ticket{gap:8px}
+.life-ticket strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zone:after{text-overflow:ellipsis}
+
+/* Minimal top bar: centered device time with actions kept on the right. */
+.ipad-bar{justify-content:flex-end}
+.ipad-bar .drag-hint{position:absolute;left:50%;transform:translateX(-50%)}
+.header-actions button{cursor:pointer}
+
+@media(max-width:700px){
+  .app-name span{font-size:10px}.app-name small{display:none}
+  .zone-title p,.connect-head p,.intro,.now-copy p{font-size:10px}
+  .zone-kicker,.zone-title span,.now-copy>span,.plan-bottom article>span,.ai-top span{font-size:9px}
+}
+
+/* Expanded monitor wall: related screens share columns while retaining the camera-console theme. */
+.canvas{width:4020px}
+.deadlines-zone{left:1720px;top:250px;border-radius:12px 64px 12px 24px}
+.progress-zone{left:1720px;top:810px;clip-path:polygon(24px 0,100% 0,100% calc(100% - 24px),calc(100% - 24px) 100%,0 100%,0 24px);border-radius:0}
+.routines-zone{left:1010px;top:1370px;border-radius:80px 18px 18px 18px}
+.classes-zone{left:2430px;top:250px}
+.grades-zone{left:2430px;top:810px}
+.activity-zone{left:1720px;top:1370px}
+.life-zone{left:2430px;top:1370px}
+.connect-zone{left:3140px;top:1370px}
+
+.deadline-radar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.deadline-radar>div{height:116px;display:flex;flex-direction:column;justify-content:center;padding:14px;background:#071b24;border:2px solid #385761;color:#8fe8ef;box-shadow:inset 0 0 16px #000}
+.deadline-radar>div:first-child{border-radius:48px 5px 5px 48px}.deadline-radar>div:last-child{border-radius:5px 48px 48px 5px}
+.deadline-radar strong{font:800 28px var(--font-geist-mono),monospace}.deadline-radar span{font:800 7px var(--font-geist-mono),monospace;letter-spacing:.12em}.deadline-radar small{margin-top:7px;color:#71949b;font-size:7px}
+.monitor-list{display:grid;gap:6px;margin-top:10px}.monitor-list button{min-height:66px;display:grid;grid-template-columns:64px 1fr 92px;align-items:center;gap:10px;padding:0 16px;border:1px solid #a6b5b7;background:linear-gradient(#fff,#dfe8e7);color:#34444a;text-align:left;cursor:pointer}.monitor-list button:first-child{clip-path:polygon(0 0,96% 0,100% 50%,96% 100%,0 100%)}.monitor-list span,.monitor-list em{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.08em}.monitor-list strong{font-size:9px}.monitor-list em{text-align:right;color:#1688a4;font-style:normal}
+
+.signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.signal-grid button{height:116px;padding:15px;border:1px solid #a9b7b9;background:linear-gradient(#fff,#dfe8e7);color:#34444a;text-align:left;cursor:pointer}.signal-grid button:nth-child(1){border-radius:50px 7px 7px 7px}.signal-grid button:nth-child(2){clip-path:polygon(10% 0,100% 0,100% 100%,0 100%,0 18%)}.signal-grid button:nth-child(3){clip-path:polygon(0 0,100% 0,100% 82%,90% 100%,0 100%)}.signal-grid button:nth-child(4){border-radius:7px 7px 50px 7px}.signal-grid span,.signal-grid small{display:block;font:800 7px var(--font-geist-mono),monospace;letter-spacing:.1em}.signal-grid strong{display:block;margin:8px 0 5px;font:800 29px var(--font-geist-mono),monospace;color:#167f99}.signal-grid small{color:#7b898d;letter-spacing:0}.trend-rail{height:42px;margin-top:10px;position:relative;display:flex;align-items:center;gap:10px;padding:0 12px;overflow:hidden;background:#071b24;border:2px solid #405d65;color:#8ce7ed;font:800 6px var(--font-geist-mono),monospace}.trend-rail i{position:absolute;left:0;bottom:0;height:4px;background:#4ed0df;box-shadow:0 0 8px #4ed0df}.trend-rail b{margin-left:auto;color:white}
+
+.routine-lanes{display:grid;gap:7px;margin-top:18px}.routine-lanes button{height:58px;display:grid;grid-template-columns:34px 1fr 46px;align-items:center;gap:10px;padding:0 13px;border:1px solid #a6b5b7;background:linear-gradient(#fff,#dfe8e7);color:#34444a;text-align:left;cursor:pointer}.routine-lanes button:nth-child(odd){border-radius:28px 6px 6px 28px}.routine-lanes button:nth-child(even){border-radius:6px 28px 28px 6px}.routine-lanes button.done{background:linear-gradient(#dff8e9,#bde8d1)}.routine-lanes i{width:29px;height:29px;display:grid;place-items:center;border-radius:50%;background:#173640;color:#8be8ef;font:800 9px var(--font-geist-mono),monospace;font-style:normal}.routine-lanes span{display:grid;gap:3px}.routine-lanes strong{font-size:9px}.routine-lanes small{font-size:7px;color:#7c898c}.routine-lanes em{font:800 6px var(--font-geist-mono),monospace;color:#1688a4;font-style:normal}.routine-water{position:relative;width:100%;height:48px;margin-top:9px;display:grid;grid-template-columns:70px 1fr 55px;align-items:center;padding:0 14px;overflow:hidden;border:2px solid #45616a;background:#071b24;color:#8fe8ef;text-align:left;cursor:pointer}.routine-water span,.routine-water em{font:800 7px var(--font-geist-mono),monospace;font-style:normal}.routine-water b{font:800 18px var(--font-geist-mono),monospace;color:white}.routine-water i{position:absolute;left:0;bottom:0;height:4px;background:#4ed0df;box-shadow:0 0 8px #4ed0df}
+
+.mini-map{width:234px}.map-grid{grid-template-columns:repeat(5,1fr)}
+.mini-map .map-grid .map-home-node{grid-column:1!important;grid-row:1}.mini-map .map-grid .map-tasks-node{grid-column:2!important;grid-row:1}.mini-map .map-grid .map-deadlines-node{grid-column:3!important;grid-row:1}.mini-map .map-grid .map-classes-node{grid-column:4!important;grid-row:1}
+.mini-map .map-grid .map-plan-node{grid-column:1!important;grid-row:2}.mini-map .map-grid .map-focus-node{grid-column:2!important;grid-row:2}.mini-map .map-grid .map-progress-node{grid-column:3!important;grid-row:2}.mini-map .map-grid .map-grades-node{grid-column:4!important;grid-row:2}
+.mini-map .map-grid .map-health-node{grid-column:1!important;grid-row:3}.mini-map .map-grid .map-routines-node{grid-column:2!important;grid-row:3}.mini-map .map-grid .map-workload-node{grid-column:3!important;grid-row:3}.mini-map .map-grid .map-life-node{grid-column:4!important;grid-row:3}.mini-map .map-grid .map-connect-node{grid-column:5!important;grid-row:3}
+.mini-map .map-grid .map-deadlines-node,.mini-map .map-grid .map-progress-node{clip-path:polygon(12% 0,88% 0,100% 50%,88% 100%,12% 100%,0 50%);border-radius:0}.mini-map .map-grid .map-routines-node{border-radius:50%}
+
+@media(max-width:700px){
+  .canvas{width:3480px}
+  .deadlines-zone{left:1450px;top:250px}.progress-zone{left:1450px;top:810px}.routines-zone{left:810px;top:1280px}
+  .classes-zone{left:2090px;top:250px}.grades-zone{left:2090px;top:810px}.activity-zone{left:1450px;top:1280px}.life-zone{left:2090px;top:1280px}.connect-zone{left:2730px;top:1280px}
+  .mini-map{width:216px}
+}
+
+/* Spatial campus map: generous travel space, staggered neighborhoods, and waypoint routing. */
+.canvas{width:5480px;height:3380px}
+.home-zone{left:300px;top:250px}.tasks-zone{left:1250px;top:180px}.deadlines-zone{left:2300px;top:400px}.classes-zone{left:3400px;top:180px}
+.plan-zone{left:450px;top:1200px}.focus-zone{left:1500px;top:1350px}.progress-zone{left:2600px;top:1120px}.grades-zone{left:3700px;top:1450px}
+.health-zone{left:200px;top:2400px}.routines-zone{left:1250px;top:2550px}.activity-zone{left:2450px;top:2300px}.life-zone{left:3550px;top:2600px}.connect-zone{left:4700px;top:2350px}
+
+.mini-map{width:244px;height:178px}
+.map-grid{position:relative;display:block;height:118px;overflow:hidden;background-color:#14242a;background-image:repeating-linear-gradient(0deg,transparent 0 26px,#49646c55 26px 27px),repeating-linear-gradient(90deg,transparent 0 42px,#49646c55 42px 43px),linear-gradient(18deg,transparent 0 46%,#73cbd055 47% 48%,transparent 49%),linear-gradient(-13deg,transparent 0 53%,#73cbd044 54% 55%,transparent 56%)}
+.map-grid:before{content:"SCHOOL DISTRICT                         LIFE DISTRICT";position:absolute;left:5px;right:5px;top:4px;color:#64858c;font:700 4px var(--font-geist-mono),monospace;letter-spacing:.08em;word-spacing:63px;white-space:nowrap;pointer-events:none}
+.mini-map .map-grid button{position:absolute!important;width:38px;height:21px;display:grid;place-items:center;margin:0!important;padding:0 2px!important;transform:translate(-50%,-50%);z-index:2;border-radius:10px;font-size:4.7px!important}
+.mini-map .map-grid .map-home-node{left:9%;top:16%;grid-area:auto!important}.mini-map .map-grid .map-tasks-node{left:27%;top:13%;grid-area:auto!important}.mini-map .map-grid .map-deadlines-node{left:47%;top:24%;grid-area:auto!important}.mini-map .map-grid .map-classes-node{left:68%;top:13%;grid-area:auto!important}
+.mini-map .map-grid .map-plan-node{left:12%;top:47%;grid-area:auto!important}.mini-map .map-grid .map-focus-node{left:32%;top:52%;grid-area:auto!important}.mini-map .map-grid .map-progress-node{left:53%;top:44%;grid-area:auto!important}.mini-map .map-grid .map-grades-node{left:74%;top:55%;grid-area:auto!important}
+.mini-map .map-grid .map-health-node{left:7%;top:84%;grid-area:auto!important}.mini-map .map-grid .map-routines-node{left:27%;top:88%;grid-area:auto!important}.mini-map .map-grid .map-workload-node{left:50%;top:79%;grid-area:auto!important}.mini-map .map-grid .map-life-node{left:72%;top:90%;grid-area:auto!important}.mini-map .map-grid .map-connect-node{left:91%;top:81%;grid-area:auto!important}
+.mini-map .map-grid button:after{content:"";position:absolute;width:3px;height:3px;right:3px;top:3px;border-radius:50%;background:#72dce6;box-shadow:0 0 5px #72dce6}
+.map-hit-area{height:118px}.mini-map .map-stick{top:30px}
+.mini-map small{font-size:5px;letter-spacing:.08em}
+
+@media(max-width:700px){
+  .canvas{width:4720px;height:3180px}
+  .home-zone{left:170px;top:250px}.tasks-zone{left:1050px;top:180px}.deadlines-zone{left:1930px;top:380px}.classes-zone{left:2810px;top:170px}
+  .plan-zone{left:350px;top:1000px}.focus-zone{left:1300px;top:1200px}.progress-zone{left:2250px;top:1050px}.grades-zone{left:3100px;top:1350px}
+  .health-zone{left:200px;top:2200px}.routines-zone{left:1150px;top:2350px}.activity-zone{left:2200px;top:2150px}.life-zone{left:3100px;top:2450px}.connect-zone{left:4000px;top:2250px}
+  .mini-map{width:224px;height:164px}.map-grid{height:104px}.map-hit-area{height:104px}.mini-map .map-grid button{width:34px;height:19px;font-size:4.2px!important}
+}
+
+/* Organized neighborhoods with varied hardware proportions. */
+.canvas{width:4480px;height:2760px}
+.home-zone{left:300px;top:500px}
+.tasks-zone{left:1150px;top:250px}
+.deadlines-zone{left:1850px;top:250px}
+.classes-zone{left:2550px;top:200px;width:400px;height:620px;border-radius:64px 14px 64px 14px}
+.grades-zone{left:3000px;top:850px;width:760px;height:500px;border-radius:80px 16px 16px 16px}
+.plan-zone{left:950px;top:1000px;width:900px;height:500px}
+.focus-zone{left:1950px;top:1050px}
+.progress-zone{left:2650px;top:1100px}
+.health-zone{left:900px;top:1900px}
+.routines-zone{left:1600px;top:1850px;width:440px;height:620px;border-radius:88px 18px 18px 18px}
+.activity-zone{left:2100px;top:1900px;width:760px;height:430px;border-radius:16px 82px 16px 82px}
+.life-zone{left:2950px;top:1850px;width:700px;height:520px}
+.connect-zone{left:3750px;top:1900px}
+.classes-zone .empty-instrument{min-height:330px}.classes-zone .data-strip{grid-template-columns:1fr;gap:5px;height:auto;padding:10px 15px;align-items:start}.classes-zone .data-strip span{display:flex;justify-content:space-between}
+.grades-zone .grade-grid{grid-template-columns:repeat(3,1fr)}
+.plan-zone .week-day{height:132px}.plan-zone .plan-bottom{grid-template-columns:1fr 1fr}
+.activity-zone .bar-chart{height:150px}.activity-zone .workload-stats{grid-template-columns:repeat(4,1fr)}
+
+.info-strip{position:absolute;height:50px;display:grid;grid-template-columns:28px 110px 110px 120px minmax(180px,1fr) 118px;align-items:center;gap:10px;padding:0 16px;background:#071b24;border:2px solid #45616a;color:#8fe5ea;box-shadow:inset 0 0 15px #000,0 8px 18px #0007;touch-action:none;cursor:grab;z-index:3;transition:box-shadow .2s}
+.info-strip:active{cursor:grabbing;box-shadow:inset 0 0 15px #000,0 0 0 2px #6bdce7,0 10px 22px #0009}
+.info-strip i{font:800 13px var(--font-geist-mono),monospace;color:#557b84;font-style:normal}.info-strip span,.info-strip small{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em}.info-strip strong{font:800 13px var(--font-geist-mono),monospace;color:white}.info-strip b{font:800 8px var(--font-geist-mono),monospace;color:#b7f7c7}.info-strip em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 7px var(--font-geist-mono),monospace;color:#78adb5;font-style:normal}.info-strip small{text-align:right;color:#52747c}
+.school-strip{left:1150px;top:850px;width:1600px;clip-path:polygon(16px 0,100% 0,100% 100%,16px 100%,0 50%)}
+.plan-strip{left:950px;top:1600px;width:2350px;border-radius:25px 4px 25px 4px}
+.life-strip{left:900px;top:2520px;width:2700px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 50%,calc(100% - 18px) 100%,0 100%)}
+
+/* Waypoints mirror the tighter category clusters. */
+.mini-map .map-grid .map-home-node{left:8%;top:24%}.mini-map .map-grid .map-tasks-node{left:27%;top:10%}.mini-map .map-grid .map-deadlines-node{left:42%;top:10%}.mini-map .map-grid .map-classes-node{left:57%;top:8%}.mini-map .map-grid .map-grades-node{left:68%;top:35%}
+.mini-map .map-grid .map-plan-node{left:23%;top:44%}.mini-map .map-grid .map-focus-node{left:44%;top:46%}.mini-map .map-grid .map-progress-node{left:59%;top:48%}
+.mini-map .map-grid .map-health-node{left:22%;top:77%}.mini-map .map-grid .map-routines-node{left:37%;top:76%}.mini-map .map-grid .map-workload-node{left:49%;top:77%}.mini-map .map-grid .map-life-node{left:68%;top:75%}.mini-map .map-grid .map-connect-node{left:87%;top:77%}
+
+@media(max-width:700px){
+  .canvas{width:4040px;height:2550px}
+  .home-zone{left:170px;top:430px}.tasks-zone{left:940px;top:220px}.deadlines-zone{left:1580px;top:220px}.classes-zone{left:2220px;top:180px}.grades-zone{left:2640px;top:740px}
+  .plan-zone{left:800px;top:880px}.focus-zone{left:1700px;top:930px}.progress-zone{left:2330px;top:970px}
+  .health-zone{left:760px;top:1660px}.routines-zone{left:1400px;top:1610px}.activity-zone{left:1850px;top:1660px}.life-zone{left:2620px;top:1610px}.connect-zone{left:3340px;top:1660px}
+  .school-strip{left:940px;top:760px;width:1450px}.plan-strip{left:800px;top:1430px;width:2150px}.life-strip{left:760px;top:2260px;width:2510px}
+  .info-strip{height:46px;grid-template-columns:24px 96px 92px 100px minmax(130px,1fr) 104px;padding:0 12px}
+}
+
+/* Neighborhood navigator: four useful regions, no arbitrary route lines. */
+.neighborhood-map{transition:transform .12s ease-out}
+.neighborhood-map:has(.map-head:active){transition:none}
+.neighborhood-map .map-head{position:relative;z-index:8;cursor:move;touch-action:none;user-select:none}
+.neighborhood-map .map-head:active{cursor:grabbing}
+.neighborhood-map .map-grid{background:#10232b;background-image:radial-gradient(circle at 20% 23%,#3d697155 0 24%,transparent 25%),radial-gradient(circle at 65% 24%,#39717a55 0 27%,transparent 28%),radial-gradient(circle at 36% 72%,#44636c55 0 25%,transparent 26%),radial-gradient(circle at 78% 75%,#355c6555 0 29%,transparent 30%)}
+.neighborhood-map .map-grid:before{display:none}
+.neighborhood-map .map-grid button{height:31px!important;width:82px!important;border:1px solid #56747c!important;background:#17323b!important;color:#78aab2!important;border-radius:16px 5px 16px 5px!important;clip-path:none!important;font-size:5.5px!important;letter-spacing:.05em!important}
+.neighborhood-map .map-grid button:after{right:6px;top:5px}
+.neighborhood-map .map-home-neighborhood{left:20%;top:25%}
+.neighborhood-map .map-school-neighborhood{left:68%;top:25%}
+.neighborhood-map .map-planning-neighborhood{left:36%;top:69%}
+.neighborhood-map .map-life-neighborhood{left:79%;top:73%}
+.neighborhood-map .map-grid button.active{background:linear-gradient(#71e3f0,#168ca9)!important;color:white!important;border-color:#c8fbff!important}
+.neighborhood-map .map-stick{z-index:7;border-radius:50%;background:#071b24aa;box-shadow:0 0 0 2px #e8f3f1,0 0 12px #61e2ed}
+.neighborhood-map .map-hit-area{cursor:crosshair}
+
+@media(max-width:700px){.neighborhood-map .map-grid button{width:72px!important;height:28px!important}.neighborhood-map .map-home-neighborhood{left:21%}.neighborhood-map .map-school-neighborhood{left:70%}}
+
+/* Contextual navigator: only the current neighborhood and its local waypoints. */
+.neighborhood-map .map-grid[class*="local-"]{background:#10232b;background-image:radial-gradient(ellipse at center,#31545d77 0 42%,transparent 43%),repeating-radial-gradient(circle at center,transparent 0 18px,#52717a33 19px 20px)}
+.neighborhood-map .local-waypoint{width:58px!important;height:25px!important;border-radius:14px!important}
+.neighborhood-map .waypoint-0{left:24%;top:36%}.neighborhood-map .waypoint-1{left:51%;top:31%}.neighborhood-map .waypoint-2{left:74%;top:47%}.neighborhood-map .waypoint-3{left:62%;top:76%}.neighborhood-map .waypoint-4{left:86%;top:72%}
+.neighborhood-map .local-home .waypoint-0{left:50%;top:50%;width:74px!important;height:34px!important}
+.neighborhood-map .local-planning .waypoint-0{left:25%;top:48%}.neighborhood-map .local-planning .waypoint-1{left:50%;top:34%}.neighborhood-map .local-planning .waypoint-2{left:74%;top:55%}
+.neighborhood-map .local-life-and-setup .waypoint-0{left:19%;top:34%}.neighborhood-map .local-life-and-setup .waypoint-1{left:39%;top:60%}.neighborhood-map .local-life-and-setup .waypoint-2{left:58%;top:34%}.neighborhood-map .local-life-and-setup .waypoint-3{left:73%;top:65%}.neighborhood-map .local-life-and-setup .waypoint-4{left:88%;top:38%}
+.edge-exit{position:absolute;top:5px;z-index:3;color:#547880;font:800 4.5px var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase;pointer-events:none}.edge-exit.previous{left:4px}.edge-exit.next{right:4px;text-align:right}.local-home .edge-exit.previous,.local-life-and-setup .edge-exit.next{opacity:.25}
+.neighborhood-map .map-stick{transition:transform .16s ease-out}
+.neighborhood-map:has(.map-hit-area:active) .map-stick{transition:none}
+
+/* Tracking-map motion and compact district labels. */
+.neighborhood-map .map-head span{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:3px 7px;border:1px solid #879496;border-radius:8px 2px 8px 2px;background:#c8cfcd;color:#34464c;font-size:5.5px;line-height:1}
+.neighborhood-map .map-head b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.neighborhood-map .full-monitor-map{background-position:center;transition:none}
+.neighborhood-map .full-monitor-map .monitor-waypoint,.neighborhood-map .full-monitor-map .district-name{transition:background .18s,color .18s,box-shadow .18s}
+.neighborhood-map:has(.map-hit-area:active) .full-monitor-map{transition:none}
+.district-name{height:10px;display:flex;align-items:center;padding:0 5px;border:1px solid #3f6068;border-radius:5px 2px 5px 2px;background:#0b2028;color:#7eb2bb!important;font-size:4px!important;line-height:1;letter-spacing:.08em!important;white-space:nowrap;box-shadow:0 1px 4px #0008}
+.district-home{left:2%;top:4%}.district-school{left:21%;top:3%}.district-planning{left:67%;top:3%}.district-life{left:22%;top:53%}
+.neighborhood-map .full-monitor-map .map-home-node{top:24%}
+.neighborhood-map .full-monitor-map .map-tasks-node,.neighborhood-map .full-monitor-map .map-deadlines-node,.neighborhood-map .full-monitor-map .map-plan-node,.neighborhood-map .full-monitor-map .map-focus-node{top:18%}
+.neighborhood-map .full-monitor-map .map-classes-node,.neighborhood-map .full-monitor-map .map-grades-node,.neighborhood-map .full-monitor-map .map-progress-node{top:39%}
+.neighborhood-map .full-monitor-map .map-health-node,.neighborhood-map .full-monitor-map .map-routines-node,.neighborhood-map .full-monitor-map .map-workload-node{top:70%}
+.neighborhood-map .full-monitor-map .map-life-node,.neighborhood-map .full-monitor-map .map-connect-node{top:90%}
+.neighborhood-map .map-stick{animation:orbBreathe 2.4s ease-in-out infinite}
+.neighborhood-map:has(.map-hit-area:active) .map-stick{animation:none;filter:brightness(1.15)}
+@keyframes orbBreathe{50%{filter:brightness(1.12);box-shadow:0 0 0 2px #134653,0 3px 7px #0009,0 0 15px #75edf5}}
+
+.neighborhood-map .full-monitor-map:after{content:"";position:absolute;inset:12px 18px;z-index:1;border:1px solid #6bb9c455;border-radius:7px;box-shadow:inset 0 0 7px #62d5df22;transform:translate(var(--nav-drift-x),var(--nav-drift-y));transition:transform .3s ease-out,border-color .3s;pointer-events:none}
+.neighborhood-map:has(.map-hit-area:active) .full-monitor-map:after{border-color:#7be7ef99;transition:none}
+
+/* Gridlocked monitor customization; translate keeps each hardware transform intact. */
+.home-zone{translate:var(--home-x) var(--home-y)}.tasks-zone{translate:var(--tasks-x) var(--tasks-y)}.deadlines-zone{translate:var(--deadlines-x) var(--deadlines-y)}.classes-zone{translate:var(--classes-x) var(--classes-y)}.grades-zone{translate:var(--grades-x) var(--grades-y)}
+.plan-zone{translate:var(--plan-x) var(--plan-y)}.focus-zone{translate:var(--focus-x) var(--focus-y)}.progress-zone{translate:var(--progress-x) var(--progress-y)}.health-zone{translate:var(--health-x) var(--health-y)}.routines-zone{translate:var(--routines-x) var(--routines-y)}.activity-zone{translate:var(--workload-x) var(--workload-y)}.life-zone{translate:var(--life-x) var(--life-y)}.connect-zone{translate:var(--connect-x) var(--connect-y)}
+.zone{transition:translate .18s cubic-bezier(.16,1,.3,1),box-shadow .2s}
+.layout-edit{background-image:linear-gradient(#65d6e51a 1px,transparent 1px),linear-gradient(90deg,#65d6e51a 1px,transparent 1px);background-size:40px 40px}
+.layout-edit .zone{cursor:default;box-shadow:0 3px 0 #89989a,0 0 0 2px #61dce888,0 20px 55px #001017aa,inset 0 1px white}
+.layout-edit .zone:active{transition:none;box-shadow:0 3px 0 #89989a,0 0 0 4px #8ef3fb,0 26px 70px #001017dd,inset 0 1px white}
+.layout-edit .zone:before{content:"••••••"!important;display:grid!important;place-items:center;left:50%!important;right:auto!important;top:7px!important;width:74px;height:13px;transform:translateX(-50%);border:1px solid #6f888e;border-radius:7px 2px 7px 2px;background:#aebbbc;color:#31515a!important;font:800 6px/1 var(--font-geist-mono),monospace!important;letter-spacing:.18em!important;cursor:grab;pointer-events:auto;z-index:8}
+.layout-edit .zone:after{content:""!important;display:block!important;left:auto!important;right:7px!important;bottom:7px!important;width:17px!important;height:17px!important;padding:0!important;border:0!important;border-right:3px solid #269db7!important;border-bottom:3px solid #269db7!important;border-radius:0 0 4px 0!important;background:transparent!important;box-shadow:none!important;animation:none!important;opacity:1!important;cursor:grab;pointer-events:auto;z-index:8}
+.layout-toggle.active{color:#8ff3fa!important;box-shadow:0 0 0 2px #54d5e5,0 0 12px #31b9dd!important}
+
+/* Tighter staggered neighborhood clusters. */
+.canvas{width:5050px;height:3760px}
+.home-zone{left:300px;top:510px}
+.tasks-zone{left:1200px;top:250px}.deadlines-zone{left:1870px;top:250px}.classes-zone{left:1200px;top:790px}.grades-zone{left:1650px;top:790px}
+.plan-zone{left:3200px;top:250px}.focus-zone{left:4140px;top:250px}.progress-zone{left:3440px;top:790px}
+.health-zone{left:1200px;top:2100px}.routines-zone{left:1880px;top:2100px}.activity-zone{left:2360px;top:2100px}.life-zone{left:1200px;top:2640px}.connect-zone{left:1940px;top:2760px}
+.school-strip{left:1200px;top:1340px;width:1210px}.plan-strip{left:3200px;top:1390px;width:1590px}.life-strip{left:1200px;top:3420px;width:1390px}
+
+@media(max-width:700px){
+  .canvas{width:4460px;height:3320px}
+  .home-zone{left:170px;top:440px}
+  .tasks-zone{left:980px;top:220px}.deadlines-zone{left:1590px;top:220px}.classes-zone{left:980px;top:690px}.grades-zone{left:1390px;top:690px}
+  .plan-zone{left:2770px;top:220px}.focus-zone{left:3620px;top:220px}.progress-zone{left:2990px;top:690px}
+  .health-zone{left:980px;top:1780px}.routines-zone{left:1590px;top:1780px}.activity-zone{left:2030px;top:1780px}.life-zone{left:980px;top:2250px}.connect-zone{left:1650px;top:2350px}
+  .school-strip{left:980px;top:1170px;width:1110px}.plan-strip{left:2770px;top:1210px;width:1440px}.life-strip{left:980px;top:2990px;width:1270px}
+}
+
+/* Final district logic: compact square groups separated by real map distance. */
+.canvas{width:5480px;height:3920px}
+.home-zone{left:300px;top:500px}
+.tasks-zone{left:1300px;top:200px}.deadlines-zone{left:2000px;top:200px}.classes-zone{left:1300px;top:840px}.grades-zone{left:2000px;top:840px}
+.plan-zone{left:3450px;top:250px}.focus-zone{left:4450px;top:250px}.progress-zone{left:3950px;top:900px}
+.health-zone{left:1350px;top:2400px}.routines-zone{left:2050px;top:2400px}.activity-zone{left:2750px;top:2400px}.life-zone{left:1350px;top:3040px}.connect-zone{left:2150px;top:3040px}
+.school-strip{left:1300px;top:1480px;width:1350px}.plan-strip{left:3450px;top:1550px;width:1650px}.life-strip{left:1350px;top:3670px;width:1450px}
+
+.neighborhood-map .full-monitor-map{background:#10232b;background-image:linear-gradient(#35515a22 1px,transparent 1px),linear-gradient(90deg,#35515a22 1px,transparent 1px);background-size:18px 18px}
+.neighborhood-map .full-monitor-map .monitor-waypoint{width:32px!important;height:18px!important;padding:0 2px!important;border:1px solid #56747c!important;background:#17323b!important;color:#78aab2!important;border-radius:3px!important;clip-path:none!important;font-size:3.8px!important;line-height:1!important;letter-spacing:-.01em!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.neighborhood-map .full-monitor-map .map-home-node{left:7%;top:20%}
+.neighborhood-map .full-monitor-map .map-tasks-node{left:25%;top:10%}.neighborhood-map .full-monitor-map .map-deadlines-node{left:39%;top:10%}.neighborhood-map .full-monitor-map .map-classes-node{left:25%;top:32%}.neighborhood-map .full-monitor-map .map-grades-node{left:39%;top:32%}
+.neighborhood-map .full-monitor-map .map-plan-node{left:69%;top:11%}.neighborhood-map .full-monitor-map .map-focus-node{left:89%;top:11%}.neighborhood-map .full-monitor-map .map-progress-node{left:79%;top:34%}
+.neighborhood-map .full-monitor-map .map-health-node{left:26%;top:66%}.neighborhood-map .full-monitor-map .map-routines-node{left:40%;top:66%}.neighborhood-map .full-monitor-map .map-workload-node{left:54%;top:66%}.neighborhood-map .full-monitor-map .map-life-node{left:26%;top:88%}.neighborhood-map .full-monitor-map .map-connect-node{left:42%;top:88%}
+.district-name{position:absolute;z-index:1;color:#668890;font:800 5px var(--font-geist-mono),monospace;letter-spacing:.12em;pointer-events:none}.district-home{left:2%;top:4%}.district-school{left:22%;top:4%}.district-planning{left:68%;top:4%}.district-life{left:23%;top:53%}
+.neighborhood-map .full-monitor-map .monitor-waypoint.active{background:linear-gradient(#71e3f0,#168ca9)!important;color:#fff!important;border-color:#c8fbff!important;box-shadow:0 0 8px #5fe6f2}
+
+@media(max-width:700px){
+  .canvas{width:4820px;height:3450px}
+  .home-zone{left:170px;top:430px}
+  .tasks-zone{left:1070px;top:180px}.deadlines-zone{left:1710px;top:180px}.classes-zone{left:1070px;top:740px}.grades-zone{left:1710px;top:740px}
+  .plan-zone{left:2990px;top:210px}.focus-zone{left:3890px;top:210px}.progress-zone{left:3440px;top:780px}
+  .health-zone{left:1110px;top:2100px}.routines-zone{left:1750px;top:2100px}.activity-zone{left:2390px;top:2100px}.life-zone{left:1110px;top:2660px}.connect-zone{left:1830px;top:2660px}
+  .school-strip{left:1070px;top:1300px;width:1240px}.plan-strip{left:2990px;top:1360px;width:1480px}.life-strip{left:1110px;top:3220px;width:1320px}
+  .neighborhood-map .full-monitor-map .monitor-waypoint{width:29px!important;height:16px!important;font-size:3.5px!important}
+}
+
+/* Restore the original glossy navigator orb. */
+.neighborhood-map .map-stick{opacity:.92;border:2px solid white;border-radius:50%;background:radial-gradient(circle at 36% 30%,#9cf3fb,#2ab3d2 55%,#087894);box-shadow:0 0 0 2px #134653,0 3px 7px #0009,0 0 9px #60ddec;transition:transform .55s cubic-bezier(.16,1,.3,1)}
+.neighborhood-map:has(.map-hit-area:active) .map-stick{transition:none}
+
+/* Google-only account gate, using the existing camera hardware language. */
+.auth-gate{width:100vw;height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 35%,#173843,#081b23 55%,#030b0f);color:#dffcff}
+.auth-console{width:min(430px,100%);padding:38px;text-align:center;border:2px solid #e8efed;border-bottom-color:#68777a;border-radius:22px;background:linear-gradient(145deg,#e9ece9,#9ca6a6);box-shadow:0 4px 0 #596568,0 24px 70px #000b;color:#253238}
+.auth-console>i{width:68px;height:68px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 25%,#c8fbff,#22afd0 55%,#07566f);border:3px solid white;box-shadow:0 0 0 2px #7d8b8e,0 0 22px #2bc5e699;color:white;font:800 18px Arial;font-style:normal}
+.auth-console>span{font:800 7px var(--font-geist-mono),monospace;letter-spacing:.18em;color:#546268}.auth-console h1{margin:9px 0 8px;font-size:25px;text-transform:uppercase}.auth-console p{margin:0 auto 22px;max-width:310px;font-size:10px;line-height:1.5;color:#536267}.auth-console button{height:44px;padding:0 18px;border:1px solid #fff;border-bottom-color:#718083;border-radius:12px;background:linear-gradient(#fff,#dbe4e4);box-shadow:0 3px 0 #768487;color:#27383e;font-size:10px;font-weight:800;cursor:pointer}.auth-console button b{display:inline-grid;place-items:center;width:23px;height:23px;margin-right:8px;border-radius:50%;background:#168eae;color:white}.auth-console small{display:block;margin-top:14px;color:#a33e35;font-size:8px}
+.auth-console>input{display:block;width:100%;height:38px;margin-top:8px;padding:0 12px;border:1px solid #849294;border-radius:8px;background:#f7f9f8;font-size:10px;outline:none}.auth-console>input:focus{border-color:#159fbe;box-shadow:0 0 0 2px #65d8e855}.auth-divider{display:flex;align-items:center;gap:9px;margin:18px 0 8px;color:#687579;font:800 6px var(--font-geist-mono),monospace;letter-spacing:.14em}.auth-divider:before,.auth-divider:after{content:"";height:1px;flex:1;background:#899698}.auth-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.auth-buttons button{height:36px}.account-notice{display:block;margin-top:5px;color:#446168;font-size:7px}
+
+/* Canonical wall geometry: compact monitor clusters with clear travel between districts. */
+.canvas{width:5200px;height:3600px}
+.home-zone{left:300px;top:500px}
+.tasks-zone{left:1300px;top:250px}.deadlines-zone{left:1915px;top:250px}.classes-zone{left:1300px;top:780px}.grades-zone{left:1730px;top:780px}
+.plan-zone{left:3200px;top:250px}.focus-zone{left:4125px;top:250px}.progress-zone{left:3520px;top:780px}
+.health-zone{left:1300px;top:2300px}.routines-zone{left:1915px;top:2300px}.activity-zone{left:2375px;top:2300px}.life-zone{left:1300px;top:2840px}.connect-zone{left:1975px;top:2840px}
+.school-strip{left:1300px;top:1320px;width:1190px}.plan-strip{left:3200px;top:1320px;width:1575px}.life-strip{left:1300px;top:3380px;width:1325px}
+
+/* The map is a clean overview: no arrows, route blobs, or moving frame. */
+.edge-exit{display:none!important}
+.neighborhood-map .full-monitor-map:after{display:none!important}
+.neighborhood-map .full-monitor-map{background:#10232b!important;background-image:linear-gradient(#35515a22 1px,transparent 1px),linear-gradient(90deg,#35515a22 1px,transparent 1px)!important;background-size:18px 18px!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint{border-radius:3px!important;clip-path:none!important}
+
+@media(max-width:700px){
+  .canvas{width:4300px;height:3140px}
+  .home-zone{left:170px;top:430px}
+  .tasks-zone{left:980px;top:220px}.deadlines-zone{left:1490px;top:220px}.classes-zone{left:980px;top:620px}.grades-zone{left:1300px;top:620px}
+  .plan-zone{left:2770px;top:220px}.focus-zone{left:3460px;top:220px}.progress-zone{left:3090px;top:620px}
+  .health-zone{left:980px;top:1900px}.routines-zone{left:1490px;top:1900px}.activity-zone{left:1845px;top:1900px}.life-zone{left:980px;top:2300px}.connect-zone{left:1520px;top:2300px}
+  .school-strip{left:980px;top:1030px;width:1080px}.plan-strip{left:2770px;top:1030px;width:1320px}.life-strip{left:980px;top:2710px;width:1080px}
+}
+
+/* Final radar and fixed-neighborhood overrides. */
+.connect-zone{left:3300px;top:2840px}
+.neighborhood-map{width:266px!important;height:304px!important;padding:10px 14px 12px!important;border-radius:34px!important;cursor:default!important}
+.neighborhood-map .map-head{height:30px;padding:0 8px}.neighborhood-map .map-head span{border:0!important;background:transparent!important;padding:0!important;color:#168da8;font-size:7px}.neighborhood-map .map-head b{font-size:6px;text-align:center}.neighborhood-map .map-head em{font-size:8px;color:#4fd2aa}
+.neighborhood-map .full-monitor-map{position:relative;width:224px;height:224px!important;margin:0 auto;padding:0!important;overflow:hidden;border:3px inset #849497!important;border-radius:50%!important;background-color:#061820!important;background-image:radial-gradient(circle,transparent 0 24%,#4f778044 25% 25.7%,transparent 26% 48%,#4f778044 49% 49.7%,transparent 50%),linear-gradient(90deg,transparent 49.5%,#4f778044 50%,transparent 50.5%),linear-gradient(transparent 49.5%,#4f778044 50%,transparent 50.5%)!important;background-size:auto!important;box-shadow:inset 0 0 22px #000,0 0 0 2px #becacb,0 4px 9px #30494f77!important}
+.neighborhood-map .full-monitor-map:before{content:"";display:block!important;position:absolute;inset:9px;border:1px solid #4e7d8666;border-radius:50%;pointer-events:none}.neighborhood-map .radar-sweep{position:absolute;z-index:2;left:21px;top:52px;width:208px;height:208px;border-radius:50%;overflow:hidden;pointer-events:none;animation:radarSpin 4.8s linear infinite;background:conic-gradient(from 0deg,transparent 0 78%,#55dce522 90%,#7ff3fa88 99%,transparent 100%);filter:drop-shadow(0 0 4px #4bd7e5)}
+.neighborhood-map .map-hit-area{left:21px!important;right:auto!important;top:52px!important;width:208px!important;height:208px!important;border-radius:50%;z-index:3!important}.neighborhood-map .map-stick{left:20px!important;top:51px!important;width:24px!important;height:24px!important;z-index:8!important}.neighborhood-map .full-monitor-map .monitor-waypoint{z-index:6!important;width:40px!important;height:18px!important;font-size:4px!important;pointer-events:auto}.neighborhood-map .district-name{z-index:5!important}.neighborhood-map>small{margin-top:8px!important;font-size:5.5px!important}
+.header-location{position:absolute;left:50%;top:7px;transform:translateX(-50%);min-width:210px;height:34px;display:grid;grid-template-columns:auto auto;align-content:center;justify-content:center;column-gap:8px;padding:0 14px;border:1px solid #8d9b9d;border-radius:11px 3px 11px 3px;background:linear-gradient(#f4f7f6,#cbd5d5);box-shadow:inset 0 1px #fff,0 2px 3px #00101755;color:#34464c}.header-location span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em;color:#1587a3}.header-location strong{font-size:9px}.header-location small{grid-column:1/3;text-align:center;font:700 5px var(--font-geist-mono),monospace;letter-spacing:.08em;color:#64767b}.header-actions>button:first-child{font-size:18px;color:#188ca8}
+.layout-edit{background-image:none!important}.layout-edit .zone:before,.layout-edit .zone:after{display:none!important}
+@media(max-width:700px){.connect-zone{left:3200px;top:2300px}.neighborhood-map{right:10px!important;bottom:78px!important;width:224px!important;height:260px!important;padding:8px 11px 10px!important}.neighborhood-map .full-monitor-map{width:188px;height:188px!important}.neighborhood-map .radar-sweep{left:18px;top:45px;width:174px;height:174px}.neighborhood-map .map-hit-area{left:18px!important;top:45px!important;width:174px!important;height:174px!important}.neighborhood-map .map-stick{left:17px!important;top:44px!important;width:22px!important;height:22px!important}.header-location{min-width:145px;max-width:42vw;padding:0 8px}.header-location small{font-size:4.5px}}
+
+/* Frutiger-aero motion for the Life command wheel, preserving its hardware palette. */
+.quick-wheel{isolation:isolate;transition:filter .45s ease,box-shadow .45s ease,transform .45s cubic-bezier(.22,1,.36,1)}
+.quick-wheel:before{content:"";position:absolute;inset:11px;z-index:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 8%,#8ff4fa99 10%,transparent 13% 31%,#35bdd777 34%,transparent 38% 57%,#bffcff88 60%,transparent 64% 82%,#239fbe66 85%,transparent 89%);border:1px solid #91edf355;box-shadow:inset 0 0 14px #61dbe844,0 0 8px #40cbe633;animation:lifeWheelOrbit 12s linear infinite;pointer-events:none}
+.quick-wheel:after{content:"";position:absolute;inset:35px;z-index:1;border-radius:50%;background:radial-gradient(circle at 31% 22%,#fff9 0 5%,transparent 6%),radial-gradient(circle at 72% 68%,#6ce6ef99 0 3%,transparent 4%),conic-gradient(from 180deg,transparent,#4fd6e533,transparent 32%);box-shadow:inset 0 0 18px #1da9c444;animation:lifeWheelOrbitReverse 18s linear infinite;pointer-events:none}
+.quick-wheel button{z-index:3;overflow:hidden;transition:transform .42s cubic-bezier(.22,1,.36,1),filter .25s ease,box-shadow .3s ease}
+.quick-wheel button:before{content:"";position:absolute;left:18%;top:10%;width:48%;height:23%;border-radius:50%;background:linear-gradient(#fff9,#fff0);transform:rotate(-14deg);pointer-events:none}
+.quick-wheel>div{z-index:4;transition:transform .45s cubic-bezier(.22,1,.36,1),text-shadow .3s ease}
+.quick-wheel:hover{filter:saturate(1.12) brightness(1.04);transform:scale(1.035);box-shadow:0 4px 0 #859294,0 13px 28px #1aa9c455,0 0 0 3px #b9f8fb88,inset 0 2px white}
+.quick-wheel:hover:before{animation-duration:2.6s;box-shadow:inset 0 0 20px #77edf477,0 0 14px #46d9e999}
+.quick-wheel:hover:after{animation-duration:4.2s}
+.quick-wheel:hover button:nth-child(1){transform:translateY(-5px)}.quick-wheel:hover button:nth-child(2){transform:translateX(5px)}.quick-wheel:hover button:nth-child(3){transform:translateY(5px)}.quick-wheel:hover button:nth-child(4){transform:translateX(-5px)}
+.quick-wheel button:hover{filter:brightness(1.12) saturate(1.15);box-shadow:0 3px 0 #778487,0 0 0 3px #bffaff,0 0 18px #32c6df!important;transform:scale(1.12)!important}
+.quick-wheel button:active{transform:scale(.96)!important;transition-duration:.08s}
+.quick-wheel:hover>div{transform:scale(1.08);text-shadow:0 0 10px #68e6f0}
+@keyframes lifeWheelOrbit{to{transform:rotate(360deg)}}@keyframes lifeWheelOrbitReverse{to{transform:rotate(-360deg)}}
+@media(prefers-reduced-motion:reduce){.quick-wheel:before,.quick-wheel:after{animation:none}.quick-wheel,.quick-wheel button,.quick-wheel>div{transition-duration:.01ms}}
+
+/* Collapsible Frutiger Aero radar launcher and icon waypoints. */
+.nav-launcher{position:fixed;right:22px;bottom:22px;z-index:32;width:64px;height:64px;display:grid;place-items:center;border:2px solid #f2ffff;border-radius:50%;background:radial-gradient(circle at 34% 24%,#d8ffff 0 7%,#8bf2f5 16%,#25b9d1 43%,#087c9a 70%,#034a63 100%);box-shadow:0 0 0 3px #8c9b9e,0 5px 10px #00101799,0 0 22px #39cce977,inset 0 2px 4px #fff,inset 0 -9px 13px #03475e;color:white;cursor:pointer;transition:transform .5s cubic-bezier(.22,1,.36,1),filter .3s,box-shadow .4s;animation:navOrbIdle 3.4s ease-in-out infinite}.nav-launcher:before{content:"";position:absolute;left:18%;top:10%;width:48%;height:24%;border-radius:50%;background:linear-gradient(#fff9,#fff0);transform:rotate(-13deg)}.nav-launcher:after{content:"";position:absolute;inset:11px;border:1px solid #c8fcff88;border-radius:50%;animation:navOrbRing 3.2s linear infinite}.nav-launcher i{width:22px;height:22px;border:2px solid #e8ffff;border-radius:50%;box-shadow:0 0 0 4px #0d7f9988,0 0 10px #d1ffff;position:relative}.nav-launcher i:before,.nav-launcher i:after{content:"";position:absolute;background:#d9ffffaa}.nav-launcher i:before{left:9px;top:-7px;width:1px;height:32px}.nav-launcher i:after{left:-7px;top:9px;width:32px;height:1px}.nav-launcher span{position:absolute;bottom:7px;font:800 5px var(--font-geist-mono),monospace;letter-spacing:.12em;text-shadow:0 1px 2px #034b63}.nav-launcher:hover{transform:translateY(-4px) scale(1.08);filter:saturate(1.14) brightness(1.08);box-shadow:0 0 0 3px #bffcff,0 8px 14px #001017aa,0 0 30px #52e2f0aa,inset 0 2px 4px #fff,inset 0 -9px 13px #03475e}.nav-launcher:active{transform:scale(.9) rotate(-8deg)}.nav-launcher.open{animation:navOrbOpen 1.8s ease-in-out infinite}
+.neighborhood-map{right:22px!important;bottom:102px!important;transform-origin:calc(100% - 28px) 100%;transition:opacity .32s ease,scale .55s cubic-bezier(.22,1,.36,1),filter .4s,visibility .32s!important}.neighborhood-map.closed{opacity:0;scale:.35;filter:blur(8px);visibility:hidden;pointer-events:none}.neighborhood-map.open{opacity:1;scale:1;filter:none;visibility:visible;pointer-events:auto}
+.neighborhood-map .full-monitor-map .monitor-waypoint{width:24px!important;height:24px!important;padding:0!important;border:2px solid #baf6fa!important;border-radius:50%!important;background:radial-gradient(circle at 35% 27%,#9cf5fa,#1aa1bf 58%,#075d76)!important;color:transparent!important;font-size:0!important;box-shadow:0 0 0 1px #395d66,0 2px 4px #0008,0 0 7px #36c9df66!important;overflow:visible!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint:before{position:absolute;inset:0;display:grid;place-items:center;color:#efffff;font:800 9px/1 Arial,sans-serif;text-shadow:0 1px 2px #034c60;content:"•"}.neighborhood-map .map-home-node:before{content:"⌂"}.neighborhood-map .map-tasks-node:before{content:"✓"}.neighborhood-map .map-deadlines-node:before{content:"!"}.neighborhood-map .map-classes-node:before{content:"C"}.neighborhood-map .map-grades-node:before{content:"A"}.neighborhood-map .map-plan-node:before{content:"▦"}.neighborhood-map .map-focus-node:before{content:"◎"}.neighborhood-map .map-progress-node:before{content:"↗"}.neighborhood-map .map-health-node:before{content:"♥"}.neighborhood-map .map-routines-node:before{content:"↻"}.neighborhood-map .map-workload-node:before{content:"▥"}.neighborhood-map .map-life-node:before{content:"✦"}.neighborhood-map .map-connect-node:before{content:"⚙"}
+.neighborhood-map .full-monitor-map .monitor-waypoint:hover,.neighborhood-map .full-monitor-map .monitor-waypoint.active{transform:translate(-50%,-50%) scale(1.22)!important;color:transparent!important;box-shadow:0 0 0 2px #e8ffff,0 0 16px #73edf6!important}.neighborhood-map .district-name{border:0!important;background:#071b24aa!important;color:#78aeb6!important;font-size:3.4px!important;height:8px!important;padding:0 3px!important}
+@keyframes navOrbIdle{50%{transform:translateY(-3px);filter:brightness(1.06)}}@keyframes navOrbRing{to{transform:rotate(360deg)}}@keyframes navOrbOpen{50%{box-shadow:0 0 0 4px #baf9fd,0 5px 10px #00101799,0 0 28px #55e6f3aa,inset 0 2px 4px #fff,inset 0 -9px 13px #03475e}}
+@media(max-width:700px){.nav-launcher{right:14px;bottom:16px;width:58px;height:58px}.neighborhood-map{right:10px!important;bottom:88px!important}.neighborhood-map .full-monitor-map .monitor-waypoint{width:21px!important;height:21px!important}.neighborhood-map .full-monitor-map .monitor-waypoint:before{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.nav-launcher,.nav-launcher:after{animation:none}.neighborhood-map{transition-duration:.01ms!important}}
+
+/* Discreet morphing nav tab: it expands into the draggable radar instead of remaining onscreen. */
+.nav-launcher{right:22px;bottom:22px;width:82px;height:34px;grid-template-columns:27px 1fr;gap:5px;padding:0 10px 0 7px;border:1px solid #dffcff;border-bottom-color:#52747b;border-radius:13px 4px 13px 4px;background:linear-gradient(160deg,#f6ffff 0,#bdeff0 32%,#43b9c9 68%,#147990 100%);box-shadow:0 2px 0 #516a70,0 6px 15px #00101777,0 0 10px #46cad855,inset 0 1px #fff;color:#fff;animation:navTabIdle 4s ease-in-out infinite;transform-origin:100% 100%;overflow:hidden}
+.nav-launcher:before{left:8px;top:3px;width:52px;height:7px;border-radius:50%;transform:none;background:linear-gradient(90deg,#fff8,#fff0)}.nav-launcher:after{inset:auto;right:8px;top:8px;width:4px;height:4px;border:0;border-radius:50%;background:#d8ffff;box-shadow:0 0 6px #d8ffff;animation:navTabSignal 1.8s ease-in-out infinite}.nav-launcher i{width:23px;height:23px;border:1px solid #edffff;border-radius:7px 2px 7px 2px;background:radial-gradient(circle at 38% 34%,#c9ffff,#21a9c2 55%,#075d73);box-shadow:0 0 0 1px #39727d,0 0 7px #b9fbff;overflow:hidden}.nav-launcher i:before{left:10px;top:3px;width:1px;height:17px}.nav-launcher i:after{left:3px;top:10px;width:17px;height:1px}.nav-launcher span{position:static;font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em;text-align:left;text-shadow:0 1px 2px #075268}.nav-launcher:hover{transform:translateY(-2px);filter:saturate(1.08) brightness(1.05);box-shadow:0 2px 0 #516a70,0 8px 18px #00101788,0 0 14px #58d9e766,inset 0 1px #fff}.nav-launcher:active{transform:scale(.94)}
+.nav-launcher.open{width:266px;height:304px;border-radius:34px;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-80px) scale(1);filter:blur(5px);animation:none;transition:width .48s cubic-bezier(.22,1,.36,1),height .48s cubic-bezier(.22,1,.36,1),border-radius .4s,transform .48s,opacity .2s .2s,filter .35s,visibility .5s}
+.neighborhood-map.open{transition-delay:.14s!important}.neighborhood-map.closed{transition-delay:0s!important}
+.neighborhood-map .map-head{cursor:grab!important}.neighborhood-map .map-head:active{cursor:grabbing!important}.neighborhood-map .map-head em{position:relative;width:20px;height:20px;display:grid;place-items:center;border:1px solid #91a3a5;border-radius:7px 2px 7px 2px;background:linear-gradient(#fff,#dbe4e4);box-shadow:0 1px 0 #718083;color:transparent!important;font-size:0!important;cursor:pointer;pointer-events:auto}.neighborhood-map .map-head em:after{content:"×";color:#287d90;font:800 12px/1 Arial,sans-serif}.neighborhood-map .map-head em:hover{background:linear-gradient(#e8fdff,#aee8ef);box-shadow:0 0 0 2px #83dce7;color:transparent!important}
+@keyframes navTabIdle{50%{transform:translateY(-2px);filter:brightness(1.035)}}@keyframes navTabSignal{50%{opacity:.35;box-shadow:0 0 2px #d8ffff}}
+@media(max-width:700px){.nav-launcher{right:14px;bottom:16px;width:76px;height:32px}.nav-launcher.open{width:224px;height:260px;transform:translateY(-72px) scale(1)}}
+
+/* Whole-world zoom and edge-following radar camera. */
+.zoom-control{position:fixed;left:18px;top:58px;z-index:24;height:32px;display:flex;align-items:center;gap:3px;padding:3px;border:1px solid #8b9b9d;border-radius:11px 3px 11px 3px;background:linear-gradient(#f8fbfa,#cbd6d6);box-shadow:0 2px 0 #657477,0 6px 14px #00101755,inset 0 1px #fff}.zoom-control button{height:24px;min-width:25px;padding:0 7px;border:1px solid #a7b5b7;border-radius:7px 2px 7px 2px;background:linear-gradient(#fff,#dce6e5);box-shadow:inset 0 1px #fff;color:#177f99;font:800 10px var(--font-geist-mono),monospace;cursor:pointer;transition:transform .12s,background .2s,box-shadow .2s}.zoom-control button:last-child{font-size:6px;letter-spacing:.05em}.zoom-control button:hover{background:linear-gradient(#eaffff,#bcebf0);box-shadow:0 0 0 2px #91dfe8}.zoom-control button:active{transform:scale(.9)}.zoom-control span{min-width:36px;text-align:center;color:#40585e;font:800 6px var(--font-geist-mono),monospace;letter-spacing:.04em}
+.canvas{transform-origin:0 0;transition:transform .68s cubic-bezier(.22,1,.36,1)}.canvas.dragging{transition:none}
+.neighborhood-map .full-monitor-map .monitor-waypoint,.neighborhood-map .district-name{translate:var(--nav-drift-x) var(--nav-drift-y);transition:translate .5s cubic-bezier(.22,1,.36,1),transform .18s,background .18s,color .18s,box-shadow .18s}.neighborhood-map:has(.map-hit-area:active) .full-monitor-map .monitor-waypoint,.neighborhood-map:has(.map-hit-area:active) .district-name{transition:translate .16s ease-out,transform .12s,background .12s,color .12s,box-shadow .12s}
+.neighborhood-map .full-monitor-map:after{content:""!important;display:block!important;position:absolute;inset:0;z-index:1;border-radius:50%;pointer-events:none;background:radial-gradient(circle at calc(50% - var(--nav-drift-x)) calc(50% - var(--nav-drift-y)),transparent 0 52%,#55dce510 68%,#07182099 100%);box-shadow:inset 0 0 16px #0008;transition:background .25s}
+@media(max-width:700px){.zoom-control{left:10px;top:54px;height:29px}.zoom-control button{height:21px;min-width:22px;padding:0 5px}.zoom-control span{min-width:31px}}
+
+/* Radar floats freely without an outer rectangular housing. */
+.neighborhood-map{background:transparent!important;border:0!important;box-shadow:none!important}
+.neighborhood-map .map-head{margin:0 5px 5px;padding:0 9px;border:1px solid #9babad;border-radius:11px 3px 11px 3px;background:linear-gradient(160deg,#f7fbfa,#d2dddd);box-shadow:0 2px 0 #627276,0 5px 12px #00101755,inset 0 1px #fff}
+
+/* Precision radar hardware: measured monitor centers, integrated side rails. */
+.neighborhood-map{overflow:visible!important;padding-top:10px!important}
+.neighborhood-map .map-head{position:absolute;left:-31px;top:48px;width:34px;height:174px;margin:0;padding:8px 5px;z-index:12;display:flex;flex-direction:column;align-items:center;gap:7px;border-radius:13px 3px 3px 13px;background:linear-gradient(90deg,#bfcaca,#eef3f2);cursor:grab!important}.neighborhood-map .map-head span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:5px!important;letter-spacing:.15em}.neighborhood-map .map-head b{flex:1;min-height:0;writing-mode:vertical-rl;transform:rotate(180deg);overflow:hidden;text-overflow:ellipsis;font-size:5px!important;letter-spacing:.06em;white-space:nowrap}.neighborhood-map .map-head em{flex:0 0 20px}
+.neighborhood-map .zoom-control{position:absolute;left:auto;right:-37px;top:54px;z-index:12;width:39px;height:163px;display:flex;flex-direction:column;gap:4px;padding:5px 4px;border-radius:3px 13px 13px 3px;background:linear-gradient(90deg,#d5dfde,#f8fbfa)}.neighborhood-map .zoom-control button{width:29px;height:29px;min-height:29px;padding:0}.neighborhood-map .zoom-control span{width:29px;min-width:29px;flex:1;display:grid;place-items:center;writing-mode:vertical-rl;transform:rotate(180deg);font-size:5px}.neighborhood-map .full-monitor-map{margin-top:0!important}
+@media(max-width:700px){.neighborhood-map .map-head{left:-26px;top:41px;width:30px;height:148px}.neighborhood-map .zoom-control{right:-32px;top:45px;width:34px;height:142px;padding:4px 3px}.neighborhood-map .zoom-control button{width:26px;height:25px;min-height:25px}.neighborhood-map .zoom-control span{width:26px;min-width:26px}}
+
+/* Controls lock onto the radar rim; monitor clusters retain breathing room. */
+.neighborhood-map .map-head{left:3px;top:64px;height:146px;border-radius:14px 4px 4px 14px;box-shadow:0 2px 0 #627276,2px 4px 10px #00101766,inset 0 1px #fff}.neighborhood-map .zoom-control{right:3px;top:67px;height:140px;border-radius:4px 14px 14px 4px;box-shadow:0 2px 0 #627276,-2px 4px 10px #00101766,inset 0 1px #fff}.neighborhood-map .map-head,.neighborhood-map .zoom-control{backdrop-filter:blur(4px)}
+.tasks-zone{left:1300px}.deadlines-zone{left:1975px}.classes-zone{left:1300px}.grades-zone{left:1800px}.plan-zone{left:3200px}.focus-zone{left:4190px}.progress-zone{left:3575px}.health-zone{left:1300px}.routines-zone{left:1980px}.activity-zone{left:2490px}.life-zone{left:1300px}.connect-zone{left:3340px}
+@media(max-width:700px){.neighborhood-map .map-head{left:3px;top:55px;width:29px;height:124px}.neighborhood-map .zoom-control{right:3px;top:57px;width:33px;height:121px}.tasks-zone{left:980px}.deadlines-zone{left:1550px}.classes-zone{left:980px}.grades-zone{left:1360px}.plan-zone{left:2770px}.focus-zone{left:3520px}.progress-zone{left:3150px}.health-zone{left:980px}.routines-zone{left:1550px}.activity-zone{left:1965px}.life-zone{left:980px}.connect-zone{left:3250px}}
+
+/* Curved rim controls and reliable pointer input. */
+.neighborhood-map .map-head{border-radius:28px 5px 5px 28px!important;border-right-color:#71878c;background:linear-gradient(90deg,#9eafb0,#eef5f4 68%)}.neighborhood-map .zoom-control{border-radius:5px 28px 28px 5px!important;border-left-color:#71878c;background:linear-gradient(90deg,#eef5f4 30%,#a7b8b9)}.neighborhood-map .zoom-control,.neighborhood-map .zoom-control *{pointer-events:auto!important}.neighborhood-map .zoom-control button{position:relative;z-index:20}
+
+/* All interactive radar layers share the exact visible circle. */
+.neighborhood-map .radar-sweep,.neighborhood-map .map-hit-area{left:21px!important;top:10px!important;width:224px!important;height:224px!important}.neighborhood-map .map-stick{left:24px!important;top:13px!important}
+@media(max-width:700px){.neighborhood-map .radar-sweep,.neighborhood-map .map-hit-area{left:18px!important;top:10px!important;width:188px!important;height:188px!important}.neighborhood-map .map-stick{left:22px!important;top:14px!important}}
+
+/* Waypoint orbs and the cursor use one projection with no secondary offset. */
+.neighborhood-map .full-monitor-map .monitor-waypoint{translate:0 0!important}
+
+/* Readable district tags and non-overlapping monitor rows. */
+.neighborhood-map .district-name{z-index:7!important;height:12px!important;padding:0 6px!important;border:1px solid #5f8b94!important;border-radius:7px 2px 7px 2px!important;background:linear-gradient(180deg,#143642ee,#081d25ee)!important;color:#b8f1f4!important;font:800 5px/1 var(--font-geist-mono),monospace!important;letter-spacing:.08em!important;box-shadow:0 2px 5px #0009,0 0 7px #38bdd044!important;translate:0 0!important;backdrop-filter:blur(3px)}
+.neighborhood-map .district-name:nth-of-type(3),.neighborhood-map .district-name:nth-of-type(4){font-size:0!important}.neighborhood-map .district-name:nth-of-type(3):after{content:"PLANNING";font-size:5px}.neighborhood-map .district-name:nth-of-type(4):after{content:"WELLNESS";font-size:5px}
+.deadlines-zone{left:2010px}.routines-zone{left:2020px}.activity-zone{left:2520px}.school-strip{top:1440px!important}
+@media(max-width:700px){.deadlines-zone{left:1580px}.routines-zone{left:1580px}.activity-zone{left:2010px}.school-strip{top:1120px!important}}
+
+/* Lower deployment position and a clear two-way morph. */
+.neighborhood-map{bottom:55px!important}.neighborhood-map.open{animation:radarDeploy .52s cubic-bezier(.22,1,.36,1) both}.neighborhood-map.closed{visibility:visible;pointer-events:none;animation:radarRetract .32s ease both}
+.nav-launcher{transition:width .5s cubic-bezier(.22,1,.36,1),height .5s cubic-bezier(.22,1,.36,1),border-radius .42s,transform .48s,opacity .25s,filter .35s,visibility .5s,box-shadow .35s!important}.nav-launcher:not(.open){transition-delay:.12s!important}
+.neighborhood-map .map-head em{transition:transform .22s cubic-bezier(.22,1,.36,1),background .2s,box-shadow .2s}.neighborhood-map .map-head em:hover{transform:rotate(90deg) scale(1.08)}.neighborhood-map .map-head em:active{transform:rotate(90deg) scale(.88)}
+@keyframes radarDeploy{0%{opacity:0;scale:.32;filter:blur(8px)}65%{opacity:1;scale:1.035;filter:blur(0)}100%{opacity:1;scale:1;filter:none}}@keyframes radarRetract{0%{opacity:1;scale:1;filter:none}100%{opacity:0;scale:.3;filter:blur(7px)}}
+@media(max-width:700px){.neighborhood-map{bottom:40px!important}}
+
+/* Compact district tags stay behind the clickable monitor orbs. */
+.neighborhood-map .district-name{z-index:4!important;height:9px!important;max-width:48px;padding:0 3px!important;border-radius:4px 1px 4px 1px!important;font-size:3.5px!important;letter-spacing:.035em!important;opacity:.78;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 3px #0008!important}
+.neighborhood-map .district-name:nth-of-type(3):after,.neighborhood-map .district-name:nth-of-type(4):after{font-size:3.5px!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint{z-index:7!important}
+
+/* Stable radar: fixed points, quiet selection, and no neighborhood captions. */
+.neighborhood-map .district-name{display:none!important}
+.neighborhood-map .full-monitor-map .monitor-waypoint{
+  translate:0 0!important;
+  transition:filter .2s ease,box-shadow .2s ease,background .2s ease!important;
+}
+.neighborhood-map .full-monitor-map .monitor-waypoint.active{
+  transform:translate(-50%,-50%)!important;
+  filter:brightness(1.18) saturate(1.08);
+}
+.neighborhood-map .full-monitor-map .monitor-waypoint:hover{
+  transform:translate(-50%,-50%) scale(1.07)!important;
+}
+
+/* Clear monitor geometry: related screens stay grouped without touching. */
+.canvas{width:5450px;height:3820px}
+.tasks-zone{left:1300px;top:250px}.deadlines-zone{left:2070px;top:250px}
+.classes-zone{left:1300px;top:850px}.grades-zone{left:1840px;top:850px}
+.school-strip{left:1300px;top:1530px!important;width:1300px}
+.plan-zone{left:3200px;top:250px}.focus-zone{left:4260px;top:250px}.progress-zone{left:3575px;top:850px}
+.plan-strip{left:3200px;top:1450px;width:1660px}
+.health-zone{left:1300px;top:2300px}.routines-zone{left:2070px;top:2300px}.activity-zone{left:2650px;top:2300px}
+.life-zone{left:1300px;top:2980px}.connect-zone{left:3340px;top:2980px}
+.life-strip{left:1300px;top:3560px;width:1390px}
+
+@media(max-width:700px){
+  .canvas{width:4600px;height:3340px}
+  .tasks-zone{left:980px;top:220px}.deadlines-zone{left:1640px;top:220px}
+  .classes-zone{left:980px;top:720px}.grades-zone{left:1420px;top:720px}
+  .school-strip{left:980px;top:1220px!important;width:1160px}
+  .plan-zone{left:2770px;top:220px}.focus-zone{left:3580px;top:220px}.progress-zone{left:3150px;top:720px}
+  .plan-strip{left:2770px;top:1190px;width:1440px}
+  .health-zone{left:980px;top:1900px}.routines-zone{left:1640px;top:1900px}.activity-zone{left:2100px;top:1900px}
+  .life-zone{left:980px;top:2400px}.connect-zone{left:3250px;top:2400px}
+  .life-strip{left:980px;top:2870px;width:1180px}
+}
+
+/* Fixed-only workspace: monitors and signal strips never advertise drag handles. */
+.zone,.info-strip{cursor:default!important}
+.info-strip>i{display:none!important}
+
+/* New fixed monitors: rapid input and live connection health. */
+.canvas{width:5700px;height:3820px}
+.capture-zone{left:4260px;top:850px;width:560px;height:500px;border-radius:52px 16px 52px 16px}
+.status-zone{left:4140px;top:2980px;width:520px;height:500px;border-radius:16px 60px 16px 60px}
+.capture-lens{width:148px;height:148px;margin:16px auto 24px;display:grid;place-content:center;text-align:center;border:3px solid #eaffff;border-radius:50%;background:radial-gradient(circle at 35% 24%,#c7ffff,#39c9d8 44%,#08758d 72%,#053845);box-shadow:0 0 0 3px #697e82,0 8px 20px #00101788,inset 0 3px 9px #fff;color:white}.capture-lens span,.capture-lens small{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em}.capture-lens strong{font:300 56px/1 Arial}.capture-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.capture-actions button{height:78px;display:flex;align-items:center;gap:11px;padding:0 14px;border:1px solid #a7b7b8;border-radius:26px 8px 26px 8px;background:linear-gradient(#fff,#dbe5e4);box-shadow:inset 0 1px white,0 3px 5px #334b5055;text-align:left;cursor:pointer}.capture-actions button:nth-child(even){border-radius:8px 26px 8px 26px}.capture-actions i{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 25%,#a7f7fa,#1aa7c0 60%,#086078);border:2px solid white;box-shadow:0 0 0 1px #7a8d90;color:white;font:800 14px Arial;font-style:normal}.capture-actions span{display:grid;gap:4px}.capture-actions b{font-size:9px}.capture-actions small{font-size:6px;color:#708085}.capture-actions button:hover{filter:brightness(1.05);transform:translateY(-2px)}
+.status-screen{height:126px;margin:14px 8px 20px;display:grid;place-content:center;text-align:center;border:3px inset #668086;border-radius:12px;background:radial-gradient(circle,#123c43,#061a20 72%);box-shadow:inset 0 0 25px #000,0 4px 8px #00101777;color:#83f3e1}.status-screen span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.2em}.status-screen strong{margin:8px 0 6px;font:900 28px var(--font-geist-mono),monospace;text-shadow:0 0 12px #69e9d4}.status-screen i{width:8px;height:8px;margin:auto;border-radius:50%;background:#6ff0c1;box-shadow:0 0 12px #6ff0c1}.status-lines{display:grid;gap:8px}.status-lines button{height:48px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border:1px solid #9fafb0;border-radius:5px;background:linear-gradient(90deg,#edf3f1,#c7d3d2);box-shadow:inset 0 1px white;cursor:pointer}.status-lines span{font:800 7px var(--font-geist-mono),monospace;letter-spacing:.1em;color:#536a70}.status-lines b{font:800 8px var(--font-geist-mono),monospace;color:#16859a}.status-zone>small{display:block;margin-top:13px;text-align:center;color:#65767a;font-size:7px}
+
+@media(max-width:700px){.canvas{width:4850px;height:3340px}.capture-zone{left:3580px;top:720px}.status-zone{left:3950px;top:2400px}}
+
+/* Clock-synchronized radar sweep: one complete scan every twenty seconds. */
+.neighborhood-map .radar-sweep{animation:radarSpin 20s linear infinite!important;animation-delay:calc(-1 * var(--radar-phase,0s))!important;animation-play-state:paused!important;transform-origin:50% 50%}
+.neighborhood-map.open .radar-sweep{animation-play-state:running!important}
+
+/* Remove the spare inner ring; the navigator frame stays fixed while its cursor moves. */
+.neighborhood-map .full-monitor-map:before{display:none!important}
+.neighborhood-map{transition:opacity .32s ease,scale .55s cubic-bezier(.22,1,.36,1),filter .4s,visibility .32s!important}
+
+/* Expanded world and larger radar viewport with more room around every waypoint. */
+.canvas{width:6800px;height:4700px}
+.home-zone{left:300px;top:650px}
+.tasks-zone{left:1500px;top:300px}.deadlines-zone{left:2270px;top:300px}.classes-zone{left:1500px;top:900px}.grades-zone{left:2040px;top:900px}.school-strip{left:1500px;top:1580px!important;width:1300px}
+.plan-zone{left:4000px;top:300px}.focus-zone{left:5060px;top:300px}.progress-zone{left:4375px;top:900px}.capture-zone{left:5060px;top:900px}.plan-strip{left:4000px;top:1500px;width:1660px}
+.health-zone{left:1500px;top:2800px}.routines-zone{left:2270px;top:2800px}.activity-zone{left:2850px;top:2800px}
+.life-zone{left:1500px;top:3700px}.life-strip{left:1500px;top:4280px;width:1390px}.connect-zone{left:4200px;top:3700px}.status-zone{left:5000px;top:3700px}
+.neighborhood-map{width:344px!important;height:350px!important;padding:10px 14px 12px!important}
+.neighborhood-map .full-monitor-map{width:300px!important;height:300px!important}
+.neighborhood-map .radar-sweep,.neighborhood-map .map-hit-area{left:22px!important;top:10px!important;width:300px!important;height:300px!important}
+.neighborhood-map .map-stick{left:26px!important;top:14px!important}
+.neighborhood-map .map-head{top:82px!important;height:182px!important}.neighborhood-map .zoom-control{top:85px!important;height:176px!important}
+
+@media(max-width:700px){
+  .canvas{width:5600px;height:4050px}
+  .home-zone{left:170px;top:520px}
+  .tasks-zone{left:1150px;top:240px}.deadlines-zone{left:1810px;top:240px}.classes-zone{left:1150px;top:740px}.grades-zone{left:1590px;top:740px}.school-strip{left:1150px;top:1240px!important}
+  .plan-zone{left:3300px;top:240px}.focus-zone{left:4110px;top:240px}.progress-zone{left:3680px;top:740px}.capture-zone{left:4110px;top:740px}.plan-strip{left:3300px;top:1210px}
+  .health-zone{left:1150px;top:2250px}.routines-zone{left:1810px;top:2250px}.activity-zone{left:2270px;top:2250px}
+  .life-zone{left:1150px;top:2900px}.life-strip{left:1150px;top:3370px}.connect-zone{left:3500px;top:2900px}.status-zone{left:4160px;top:2900px}
+  .neighborhood-map{width:290px!important;height:300px!important;padding:10px 11px!important}
+  .neighborhood-map .full-monitor-map{width:250px!important;height:250px!important}
+  .neighborhood-map .radar-sweep,.neighborhood-map .map-hit-area{left:20px!important;top:10px!important;width:250px!important;height:250px!important}
+  .neighborhood-map .map-stick{left:23px!important;top:13px!important}
+  .neighborhood-map .map-head{top:67px!important;height:154px!important}.neighborhood-map .zoom-control{top:70px!important;height:148px!important}
+}
+
+/* Remove the old cursor-following edge vignette/ghost circle. */
+.neighborhood-map .full-monitor-map:after{display:none!important;content:none!important}
+
+/* Interactive live rim: the glow leans toward edge travel while map geometry stays exact. */
+.neighborhood-map .full-monitor-map{border-color:hsl(var(--radar-hue,194) 48% 62%)!important;background-color:hsl(var(--radar-hue,194) 48% 9%)!important;box-shadow:inset 0 0 24px hsl(var(--radar-hue,194) 72% 4%),0 0 0 2px #becacb,var(--edge-follow-x,0) var(--edge-follow-y,0) calc(8px + var(--edge-strength,0)*15px) hsl(var(--radar-hue,194) 88% 58% / calc(.18 + var(--edge-strength,0)*.5))!important;transition:border-color .35s ease,background-color .35s ease,box-shadow .18s ease-out}
+.neighborhood-map .map-stick{filter:hue-rotate(calc((var(--radar-hue,194) - 194)*1deg)) saturate(calc(1 + var(--edge-strength,0)*.25));transition:transform .2s cubic-bezier(.22,1,.36,1),filter .25s ease!important}
+.neighborhood-map .radar-sweep{filter:hue-rotate(calc((var(--radar-hue,194) - 194)*1deg)) drop-shadow(0 0 calc(4px + var(--edge-strength,0)*5px) #4bd7e5)!important}
+
+/* Keep the navigator compact and tucked into the lower-right corner. */
+.neighborhood-map{
+  right:14px!important;
+  bottom:12px!important;
+  width:230px!important;
+  height:236px!important;
+  padding:8px 12px 10px!important;
+}
+.neighborhood-map .full-monitor-map{
+  width:196px!important;
+  height:196px!important;
+}
+.neighborhood-map .radar-sweep,
+.neighborhood-map .map-hit-area{
+  left:17px!important;
+  top:8px!important;
+  width:196px!important;
+  height:196px!important;
+}
+.neighborhood-map .map-stick{left:5px!important;top:-4px!important}
+.neighborhood-map .map-head{left:2px!important;top:52px!important;width:29px!important;height:116px!important}
+.neighborhood-map .zoom-control{right:2px!important;top:54px!important;width:33px!important;height:112px!important;padding:4px 3px!important}
+.neighborhood-map .zoom-control button{width:26px!important;height:24px!important;min-height:24px!important}
+.neighborhood-map .zoom-control span{width:26px!important;min-width:26px!important}
+
+/* The left status rail reads normally instead of rotating its copy sideways. */
+.neighborhood-map .map-head{
+  left:-31px!important;
+  width:48px!important;
+  padding:8px 6px!important;
+  justify-content:flex-start!important;
+}
+.neighborhood-map .map-head span,
+.neighborhood-map .map-head b{
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+  width:100%!important;
+  min-height:auto!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  line-height:1.25!important;
+}
+.neighborhood-map .map-head b{flex:0 0 auto!important}
+.neighborhood-map .map-head>button{margin-top:auto!important;flex:0 0 20px!important}
+
+@media(max-width:700px){
+  .neighborhood-map{right:8px!important;bottom:8px!important;width:210px!important;height:216px!important;padding:7px 10px 9px!important}
+  .neighborhood-map .full-monitor-map{width:180px!important;height:180px!important}
+  .neighborhood-map .radar-sweep,.neighborhood-map .map-hit-area{left:15px!important;top:7px!important;width:180px!important;height:180px!important}
+  .neighborhood-map .map-stick{left:4px!important;top:-4px!important}
+  .neighborhood-map .map-head{top:47px!important;height:106px!important}
+  .neighborhood-map .zoom-control{top:49px!important;height:102px!important}
+}
+
+/* The close control mounts directly to the radar rim; no separate left rail. */
+.neighborhood-map .map-head{
+  left:5px!important;
+  top:5px!important;
+  width:24px!important;
+  height:24px!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  display:block!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.neighborhood-map .map-head span,
+.neighborhood-map .map-head b{display:none!important}
+.neighborhood-map .map-head>button{
+  position:absolute!important;
+  inset:0!important;
+  width:24px!important;
+  height:24px!important;
+  margin:0!important;
+  border:2px solid #eaffff!important;
+  box-shadow:0 0 0 2px #547279,0 2px 5px #00101799,0 0 9px #5bdce8!important;
+  z-index:14!important;
+}
+
+@media(max-width:700px){
+  .neighborhood-map .map-head{left:3px!important;top:3px!important;width:23px!important;height:23px!important}
+  .neighborhood-map .map-head>button{width:23px!important;height:23px!important}
+}
+
+/* A compact, logical monitor world: related screens share rows and no district
+   is pushed to an impractical canvas edge. */
+.canvas{width:4800px!important;height:3500px!important}
+.home-zone{left:300px!important;top:500px!important}
+
+.tasks-zone{left:1250px!important;top:260px!important}
+.deadlines-zone{left:1980px!important;top:260px!important}
+.classes-zone{left:1250px!important;top:850px!important}
+.grades-zone{left:1980px!important;top:850px!important}
+.school-strip{left:1250px!important;top:1450px!important;width:1380px!important}
+
+.plan-zone{left:3050px!important;top:260px!important}
+.focus-zone{left:3780px!important;top:260px!important}
+.progress-zone{left:3050px!important;top:850px!important}
+.capture-zone{left:3780px!important;top:850px!important}
+.plan-strip{left:3050px!important;top:1450px!important;width:1380px!important}
+
+.health-zone{left:1250px!important;top:1900px!important}
+.routines-zone{left:1980px!important;top:1900px!important}
+.activity-zone{left:2710px!important;top:1900px!important}
+
+.life-zone{left:1250px!important;top:2650px!important}
+.life-strip{left:1980px!important;top:2760px!important;width:730px!important}
+.connect-zone{left:3050px!important;top:2650px!important}
+.status-zone{left:3780px!important;top:2650px!important}
+
+/* The close button straddles the upper-left rim, visibly attached to it. */
+.neighborhood-map .map-head{left:27px!important;top:19px!important}
+
+@media(max-width:700px){
+  .canvas{width:4200px!important;height:3050px!important}
+  .home-zone{left:170px!important;top:430px!important}
+  .tasks-zone{left:950px!important;top:210px!important}.deadlines-zone{left:1530px!important;top:210px!important}
+  .classes-zone{left:950px!important;top:700px!important}.grades-zone{left:1530px!important;top:700px!important}
+  .school-strip{left:950px!important;top:1190px!important;width:1150px!important}
+  .plan-zone{left:2550px!important;top:210px!important}.focus-zone{left:3180px!important;top:210px!important}
+  .progress-zone{left:2550px!important;top:700px!important}.capture-zone{left:3180px!important;top:700px!important}
+  .plan-strip{left:2550px!important;top:1190px!important;width:1200px!important}
+  .health-zone{left:950px!important;top:1580px!important}.routines-zone{left:1530px!important;top:1580px!important}.activity-zone{left:2110px!important;top:1580px!important}
+  .life-zone{left:950px!important;top:2250px!important}.life-strip{left:1530px!important;top:2340px!important;width:580px!important}
+  .connect-zone{left:2550px!important;top:2250px!important}.status-zone{left:3180px!important;top:2250px!important}
+  .neighborhood-map .map-head{left:24px!important;top:16px!important}
+}
+
+/* Near the rim, pan the monitor layer inward to create look-ahead space. */
+.neighborhood-map .full-monitor-map .monitor-waypoint{
+  translate:var(--nav-drift-x,0px) var(--nav-drift-y,0px)!important;
+  transition:translate .28s cubic-bezier(.22,1,.36,1),filter .2s ease,box-shadow .2s ease,background .2s ease!important;
+}
+.neighborhood-map:has(.map-hit-area:active) .full-monitor-map .monitor-waypoint{
+  transition:translate .12s ease-out,filter .12s ease,box-shadow .12s ease!important;
+}
+
+/* One projection with a small outer-edge camera nudge for breathing room. */
+.neighborhood-map .full-monitor-map .monitor-waypoint{
+  translate:var(--nav-drift-x,0px) var(--nav-drift-y,0px)!important;
+  transition:translate .22s cubic-bezier(.22,1,.36,1),filter .18s ease,box-shadow .18s ease,background .18s ease!important;
+}
+.neighborhood-map:has(.map-hit-area:active) .full-monitor-map .monitor-waypoint{transition:translate .1s ease-out,filter .12s ease,box-shadow .12s ease!important}
+.neighborhood-map .district-name{
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:auto!important;
+  max-width:54px!important;
+  height:10px!important;
+  padding:0 4px!important;
+  translate:calc(-50% + var(--nav-drift-x,0px)) calc(-50% + var(--nav-drift-y,0px))!important;
+  border:1px solid #5bb7c455!important;
+  border-radius:6px!important;
+  background:#061820bb!important;
+  color:#8adce4!important;
+  font:800 4px/1 var(--font-geist-mono),monospace!important;
+  letter-spacing:.08em!important;
+  opacity:.72!important;
+  box-shadow:0 0 7px #28aeca33!important;
+  pointer-events:none!important;
+}
+.neighborhood-map .district-name:nth-of-type(3),
+.neighborhood-map .district-name:nth-of-type(4){font-size:0!important}
+.neighborhood-map .district-name:nth-of-type(3):after{content:"PLANNING";font-size:4px!important}
+.neighborhood-map .district-name:nth-of-type(4):after{content:"WELLNESS";font-size:4px!important}
+
+/* Frutiger Aero accents only where the instrument theme was still visually flat. */
+.viewport:after{
+  display:block;
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 13% 20%,#9af4ff26 0 2px,transparent 3px),
+    radial-gradient(circle at 77% 17%,#ffffff1f 0 4px,transparent 5px),
+    radial-gradient(circle at 88% 74%,#64e0ad1f 0 6px,transparent 7px),
+    radial-gradient(ellipse at 50% 115%,#1f9fbd2b 0 24%,transparent 58%);
+  background-size:120px 130px,190px 210px,260px 240px,100% 100%;
+  opacity:.72;
+}
+.info-strip{
+  overflow:hidden;
+  border-color:#6497a2;
+  border-radius:15px 5px 15px 5px;
+  background:linear-gradient(180deg,#123b48 0,#08232d 58%,#04171e 100%);
+  box-shadow:inset 0 1px #79c6d044,inset 0 -10px 22px #00101788,0 8px 18px #0007;
+}
+.info-strip:after{
+  content:"";
+  position:absolute;
+  left:3%;
+  top:3px;
+  width:42%;
+  height:8px;
+  border-radius:50%;
+  background:linear-gradient(90deg,#c8fbff32,transparent);
+  pointer-events:none;
+}
+
+/* Expanded monitor grid. */
+.canvas{width:5400px!important}
+.exams-zone{left:2710px!important;top:260px!important}
+.notes-zone{left:2710px!important;top:850px!important}
+.goals-zone{left:4510px!important;top:260px!important}
+
+.new-monitor-display{height:235px;margin-top:28px;display:grid;place-content:center;justify-items:center;gap:8px;position:relative;overflow:hidden;border:4px solid #40575e;border-radius:60px 16px 60px 16px;background:radial-gradient(circle at 50% 36%,#164c59,#071b24 68%);box-shadow:inset 0 0 30px #000,0 4px 8px #52676b66;color:#a4f4f7}.new-monitor-display:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 3px,#72dce608 3px 4px);pointer-events:none}.new-monitor-display strong{font:900 25px var(--font-geist-mono),monospace}.new-monitor-display span{font:700 7px var(--font-geist-mono),monospace;color:#719ba4}.new-monitor-display i{position:absolute;right:20px;bottom:14px;color:#4e8590;font:800 38px var(--font-geist-mono),monospace;font-style:normal}
+.new-monitor-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}.new-monitor-actions button,.monitor-primary{height:44px;border:1px solid #a4b4b6;border-radius:18px 6px 18px 6px;background:linear-gradient(#fff,#dbe7e7);box-shadow:inset 0 1px white,0 2px 3px #65787b66;color:#247d91;font-size:8px;font-weight:800;cursor:pointer}.new-monitor-actions button:nth-child(2){border-radius:6px 18px 6px 18px}
+.note-slots{display:grid;gap:9px;margin-top:30px}.note-slots button{height:68px;display:grid;grid-template-columns:42px 1fr 55px;align-items:center;gap:10px;padding:0 14px;border:1px solid #a7b6b8;border-radius:29px 8px 8px 29px;background:linear-gradient(#fff,#dfe8e7);box-shadow:inset 0 1px white,0 2px 4px #52666a44;text-align:left;cursor:pointer}.note-slots button:nth-child(2){border-radius:8px}.note-slots button:nth-child(3){border-radius:8px 29px 29px 8px}.note-slots b{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 35% 25%,#bdf8fb,#35bcd1 60%,#08738c);color:white;font:800 8px var(--font-geist-mono),monospace}.note-slots span{font-size:10px;font-weight:800}.note-slots small{font:700 6px var(--font-geist-mono),monospace;color:#708085}.monitor-primary{width:100%;margin-top:15px}
+.goal-orbit{position:relative;width:230px;height:230px;margin:28px auto 0;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#36bdd5 0 1%,#173945 1%);box-shadow:0 0 0 7px #dbe4e3,0 0 0 9px #87989b,0 8px 18px #47606866,inset 0 0 20px #000}.goal-orbit:before{content:"";position:absolute;width:188px;height:188px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#194b58,#071b24 72%);box-shadow:inset 0 0 23px #000}.goal-orbit div{position:relative;z-index:1;text-align:center;color:#9df2f5}.goal-orbit strong{display:block;font:900 35px var(--font-geist-mono),monospace}.goal-orbit span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em;color:#6f9da5}
+
+/* Waypoint variation: color and silhouette communicate monitor family. */
+.neighborhood-map .map-exams-node{border-radius:4px!important;background:linear-gradient(145deg,#fff2aa,#df9d2d 62%,#8d5608)!important;transform:translate(-50%,-50%) rotate(45deg)!important}.neighborhood-map .map-exams-node:before{content:"E"!important;transform:rotate(-45deg)}
+.neighborhood-map .map-notes-node{border-radius:5px 12px 5px 12px!important;background:linear-gradient(145deg,#d8f7d8,#55bd7c 62%,#176a45)!important}.neighborhood-map .map-notes-node:before{content:"N"!important}
+.neighborhood-map .map-goals-node{width:29px!important;border-radius:12px 4px 12px 4px!important;background:linear-gradient(145deg,#f0ddff,#9b6fd1 62%,#553286)!important}.neighborhood-map .map-goals-node:before{content:"G"!important}
+.neighborhood-map .map-deadlines-node{background:linear-gradient(145deg,#ffd8d0,#ed715d 62%,#983729)!important}
+.neighborhood-map .map-health-node,.neighborhood-map .map-routines-node,.neighborhood-map .map-workload-node{background:linear-gradient(145deg,#d4ffe8,#4bc593 62%,#17684c)!important}
+.neighborhood-map .map-connect-node,.neighborhood-map .map-status-node{border-radius:5px!important;background:linear-gradient(145deg,#e1e8ef,#8296aa 62%,#405365)!important}
+
+@media(max-width:700px){
+  .canvas{width:4450px!important}
+  .exams-zone{left:2110px!important;top:210px!important}.notes-zone{left:2110px!important;top:700px!important}
+  .goals-zone{left:3810px!important;top:210px!important}
+}
+
+/* Smartphone AI assistant launched by the center dock orb. */
+.ai-phone-shade{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 78%,#36bdd52b,transparent 42%),#00101799;backdrop-filter:blur(10px);animation:phoneShadeIn .22s ease both}
+.ai-phone{width:min(390px,calc(100vw - 28px));height:min(760px,calc(100vh - 32px));display:grid;grid-template-rows:auto 1fr auto auto auto;overflow:hidden;position:relative;border:3px solid #efffff;border-radius:48px;background:linear-gradient(150deg,#f7ffff,#c9e5e6 44%,#91afb3);box-shadow:0 0 0 5px #62777b,0 22px 80px #000d,0 0 42px #48d5e866,inset 0 2px 2px white;animation:phoneRise .48s cubic-bezier(.22,1,.36,1) both}
+.ai-phone:before{content:"";position:absolute;inset:8px;z-index:0;border:1px solid #ffffff88;border-radius:38px;pointer-events:none}.ai-phone>header{position:relative;z-index:2;min-height:112px;padding:31px 25px 14px;background:radial-gradient(circle at 18% 10%,#bffaff55,transparent 25%),linear-gradient(160deg,#123e4b,#08242e 68%,#05171e);color:white;border-bottom:1px solid #5fa3b0;box-shadow:inset 0 -12px 26px #00101766}.phone-speaker{position:absolute;left:50%;top:11px;width:72px;height:7px;transform:translateX(-50%);border:1px solid #526f76;border-radius:9px;background:#020b0f;box-shadow:inset 0 1px 3px #000}.ai-phone>header button{position:absolute;right:18px;top:25px;width:29px;height:29px;border:1px solid #a8f1f4;border-radius:50%;background:radial-gradient(circle at 35% 25%,#bffcff,#28abc2 58%,#075d72);box-shadow:0 0 0 2px #315d66,0 0 10px #53d9e8;color:white;font-size:17px;cursor:pointer}.ai-phone>header>span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.18em;color:#7fe7ec}.ai-phone>header h2{margin:5px 0 4px;font-size:23px;letter-spacing:-.03em}.ai-phone>header small{display:flex;align-items:center;gap:6px;font:700 6px var(--font-geist-mono),monospace;letter-spacing:.08em;color:#8bbdc4}.ai-phone>header small i{width:6px;height:6px;border-radius:50%;background:#65e3a7;box-shadow:0 0 8px #65e3a7}
+.phone-chat{position:relative;z-index:1;min-height:0;overflow-y:auto;padding:20px 17px 14px;background:linear-gradient(180deg,#eaf8f7,#dceeed 58%,#cde2e2);scrollbar-width:thin;scrollbar-color:#68b8c3 transparent}.phone-welcome{height:100%;display:grid;place-content:center;justify-items:center;text-align:center;padding:25px}.assistant-orb{width:76px;height:76px;margin-bottom:15px;border:3px solid white;border-radius:50%;background:radial-gradient(circle at 33% 24%,#e7ffff 0 6%,#8deaf0 16%,#28bad1 46%,#087890 72%,#03485b);box-shadow:0 0 0 3px #779195,0 8px 18px #28788655,0 0 24px #4bd8e788,inset 0 3px 5px white}.phone-welcome strong{font-size:18px;color:#23464e}.phone-welcome p{max-width:250px;margin:7px 0 0;color:#5a7379;font-size:10px;line-height:1.5}.phone-chat article{display:grid;gap:4px;margin-bottom:14px}.phone-chat article span{font:800 5px var(--font-geist-mono),monospace;letter-spacing:.14em;color:#678289}.phone-chat article p{max-width:86%;margin:0;padding:11px 13px;border:1px solid #a7c1c3;border-radius:7px 18px 18px 18px;background:linear-gradient(#fff,#e9f3f2);box-shadow:0 3px 7px #405a5f22;color:#294047;font-size:10px;line-height:1.55;white-space:pre-wrap}.phone-chat article.user{justify-items:end}.phone-chat article.user p{border-color:#1689a1;border-radius:18px 7px 18px 18px;background:linear-gradient(145deg,#28b4cb,#087a96);color:white;box-shadow:inset 0 1px #91edf5,0 4px 9px #17647744}.phone-chat article.user span{color:#268399}.phone-chat article.thinking p{color:#5c747a}.typing-dots{display:inline!important;margin-left:5px;color:#1ea5bd!important;letter-spacing:.1em!important;animation:typingPulse 1.1s ease-in-out infinite}
+.phone-prompts{position:relative;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:9px 14px 4px;background:#d8e9e8}.phone-prompts::-webkit-scrollbar{display:none}.phone-prompts button{flex:0 0 auto;height:27px;padding:0 10px;border:1px solid #8db2b7;border-radius:14px;background:linear-gradient(#fff,#dce9e8);box-shadow:inset 0 1px white;color:#24788b;font-size:7px;font-weight:800;cursor:pointer}
+.phone-input{position:relative;z-index:2;display:grid;grid-template-columns:1fr 40px;gap:8px;padding:10px 14px;background:#d8e9e8}.phone-input textarea{min-width:0;height:42px;max-height:90px;resize:none;padding:12px 13px;border:1px solid #93afb3;border-radius:18px 7px 18px 7px;background:#f9ffff;box-shadow:inset 0 2px 5px #50717622;outline:0;color:#234047;font-size:10px}.phone-input textarea:focus{border-color:#42bdd0;box-shadow:0 0 0 3px #8ce3ed66,inset 0 2px 5px #50717622}.phone-input button{width:40px;height:40px;border:2px solid white;border-radius:50%;background:radial-gradient(circle at 35% 25%,#c9ffff,#28b0c8 58%,#07687e);box-shadow:0 0 0 2px #779094,0 3px 7px #315d6666;color:white;font-size:18px;cursor:pointer}.phone-input button:disabled{filter:grayscale(.8);opacity:.48;cursor:default}.ai-phone>footer{position:relative;z-index:2;padding:7px 24px 14px;background:#d8e9e8;text-align:center;color:#6e8387;font-size:6px;line-height:1.4}
+@keyframes phoneShadeIn{from{opacity:0}}@keyframes phoneRise{from{opacity:0;transform:translateY(30px) scale(.9)}}@keyframes typingPulse{50%{opacity:.35}}
+@media(max-width:700px){.ai-phone-shade{padding:8px}.ai-phone{height:calc(100vh - 16px);border-radius:38px}.ai-phone>header{min-height:102px}.phone-chat{padding-top:14px}}
+@media(prefers-reduced-motion:reduce){.ai-phone-shade,.ai-phone,.typing-dots{animation:none}}
+
+/* Accuracy wins: the 18% safe margin provides edge space without moving data points. */
+.neighborhood-map .full-monitor-map .monitor-waypoint{translate:0 0!important}
+.neighborhood-map .district-name{translate:-50% -50%!important}
+
+/* Cockpit command dock: five useful destinations with a central AI instrument. */
+.dock{
+  width:470px!important;
+  height:78px!important;
+  max-width:calc(100vw - 170px)!important;
+  padding:9px 17px!important;
+  gap:8px!important;
+  overflow:visible!important;
+  border:2px solid #edf8f7!important;
+  border-bottom-color:#4d6268!important;
+  border-radius:20px 20px 34px 34px!important;
+  background:linear-gradient(180deg,#dbe7e6 0,#9dadaf 18%,#394d53 20%,#172d35 73%,#07171d 100%)!important;
+  box-shadow:0 4px 0 #33474c,0 18px 42px #000b,inset 0 2px #fff,inset 0 -12px 20px #001017!important;
+}
+.dock:before,.dock:after{content:"";position:absolute;top:8px;width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#78898c 48%,#293b40 72%);box-shadow:0 1px 2px #000}.dock:before{left:9px}.dock:after{right:9px}
+.dock button{
+  position:relative!important;
+  width:72px!important;
+  height:54px!important;
+  flex:1 1 72px!important;
+  display:grid!important;
+  grid-template-rows:23px 12px 8px!important;
+  align-content:center!important;
+  place-items:center!important;
+  gap:0!important;
+  overflow:hidden!important;
+  border:1px solid #6d858b!important;
+  border-bottom-color:#061217!important;
+  border-radius:8px 8px 15px 15px!important;
+  background:linear-gradient(180deg,#35515a,#142d35 54%,#091c23)!important;
+  box-shadow:inset 0 1px #72909a,0 2px 0 #020b0e!important;
+  color:#d7edf0!important;
+  text-shadow:none!important;
+}
+.dock button:before{content:"";position:absolute;left:10%;right:10%;top:3px;height:5px;border-radius:50%;background:linear-gradient(90deg,transparent,#dffcff2e,transparent)}
+.dock button>span{font:800 18px/1 Arial,sans-serif!important;color:#70dce8!important;text-shadow:0 0 9px #43ccdc!important}.dock button>b{font:800 7px/1 var(--font-geist-mono),monospace!important;text-transform:uppercase;color:#f0f7f7!important}.dock button>small{display:block;font:800 4.5px/1 var(--font-geist-mono),monospace;letter-spacing:.12em;color:#668e97}
+.dock button:hover,.dock button.active{border-color:#8cecf3!important;background:linear-gradient(180deg,#426b75,#164151 54%,#082b36)!important;box-shadow:inset 0 1px #a9f5f8,0 0 0 2px #48cbd977,0 0 15px #36cadb66!important;transform:translateY(-2px)}
+.dock button.active>small{color:#87f0c6}.dock button.active:after{content:"";position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#74efac;box-shadow:0 0 8px #74efac}
+.dock .dock-main{
+  width:66px!important;
+  height:66px!important;
+  min-width:66px!important;
+  min-height:66px!important;
+  flex:0 0 66px!important;
+  margin-top:-13px!important;
+  grid-template-rows:31px 11px 8px!important;
+  border:3px solid #f1ffff!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle at 35% 25%,#e1ffff 0 5%,#87edf1 14%,#2ac0d5 43%,#087d96 70%,#034552 100%)!important;
+  box-shadow:0 0 0 3px #506b70,0 7px 13px #0009,0 0 22px #48d8e988,inset 0 3px 6px #fff,inset 0 -10px 17px #03434f!important;
+  animation:cockpitAiPulse 3.2s ease-in-out infinite!important;
+}
+.dock .dock-main>span{width:27px;height:27px;border:1px solid #dfffff;border-radius:50%;box-shadow:0 0 0 4px #08758c88,0 0 11px #dfffff}.dock .dock-main>b{color:white!important}.dock .dock-main>small{color:#c2f6f8!important}
+@keyframes cockpitAiPulse{50%{filter:brightness(1.1);box-shadow:0 0 0 3px #6e8a8f,0 8px 15px #0009,0 0 30px #5ce5eeaa,inset 0 3px 6px #fff,inset 0 -10px 17px #03434f}}
+
+/* The AI phone deploys above the dock like the navigator instead of blocking the app. */
+.ai-phone-popover{
+  position:fixed!important;
+  left:50%!important;
+  bottom:108px!important;
+  z-index:61!important;
+  width:min(370px,calc(100vw - 28px))!important;
+  height:min(610px,calc(100vh - 132px))!important;
+  transform-origin:50% 100%!important;
+  animation:cockpitPhoneDeploy .46s cubic-bezier(.22,1,.36,1) both!important;
+}
+.ai-phone-popover:after{content:"";position:absolute;left:50%;bottom:-12px;width:24px;height:24px;z-index:-1;transform:translateX(-50%) rotate(45deg);border-right:3px solid #efffff;border-bottom:3px solid #efffff;background:#91afb3;box-shadow:5px 5px 0 #62777b}
+@keyframes cockpitPhoneDeploy{from{opacity:0;transform:translateX(-50%) translateY(35px) scale(.72);filter:blur(7px)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1);filter:none}}
+
+@media(max-width:700px){
+  .dock{bottom:9px!important;width:calc(100vw - 18px)!important;max-width:none!important;height:70px!important;padding:8px 10px!important;gap:4px!important}.dock button{width:auto!important;height:48px!important;min-width:0!important;grid-template-rows:20px 11px 7px!important}.dock button>span{font-size:15px!important}.dock button>b{font-size:6px!important}.dock button>small{font-size:3.8px!important}.dock .dock-main{width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;flex-basis:58px!important;margin-top:-11px!important}.ai-phone-popover{bottom:91px!important;height:calc(100vh - 108px)!important}
+}
+
+/* Session check-in: a unique cockpit action rather than another navigation link. */
+.checkin-popover{position:fixed;left:calc(50% + 150px);bottom:108px;z-index:62;width:310px;padding:24px 22px 18px;border:2px solid #f1ffff;border-radius:28px 9px 28px 9px;background:linear-gradient(145deg,#f7ffff,#d8eaea 54%,#a8bec1);box-shadow:0 0 0 4px #657a7e,0 18px 48px #000b,0 0 25px #4ad4e655,inset 0 2px white;color:#29444b;animation:checkinDeploy .4s cubic-bezier(.22,1,.36,1) both}.checkin-popover:after{content:"";position:absolute;right:40px;bottom:-10px;width:20px;height:20px;transform:rotate(45deg);border-right:2px solid white;border-bottom:2px solid white;background:#a8bec1}.checkin-popover>span{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.17em;color:#168ca5}.checkin-popover h2{margin:6px 0 18px;font-size:23px}.checkin-close{position:absolute;right:13px;top:13px;width:28px;height:28px;border:2px solid white;border-radius:50%;background:radial-gradient(circle at 35% 25%,#c8ffff,#2bb3ca 60%,#08667b);box-shadow:0 0 0 2px #70868a;color:white;font-size:16px;cursor:pointer}.checkin-group{display:grid;gap:7px;margin-bottom:13px}.checkin-group>b{font:800 6px var(--font-geist-mono),monospace;letter-spacing:.13em;color:#60777c}.checkin-group>div{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.checkin-group button{height:34px;border:1px solid #9bafb2;border-radius:13px 5px 13px 5px;background:linear-gradient(#fff,#dde9e8);box-shadow:inset 0 1px white;color:#53696e;font-size:7px;font-weight:800;text-transform:uppercase;cursor:pointer}.checkin-group button.selected{border-color:#35b9cd;background:linear-gradient(#d8fbfd,#83dce6);box-shadow:0 0 0 2px #8ee5ed88;color:#075c70}.checkin-water{position:relative;width:100%;height:48px;margin-top:3px;display:grid;grid-template-columns:60px 1fr 82px;align-items:center;padding:0 13px;overflow:hidden;border:2px solid #40636b;border-radius:8px 20px 8px 20px;background:linear-gradient(145deg,#123b48,#061b24);color:#93edf1;text-align:left;cursor:pointer}.checkin-water:before{content:"";position:absolute;left:0;bottom:0;width:var(--water-level,35%);height:4px;background:#45d5e6;box-shadow:0 0 9px #45d5e6}.checkin-water span,.checkin-water em{font:800 6px var(--font-geist-mono),monospace;font-style:normal}.checkin-water strong{font:900 15px var(--font-geist-mono),monospace;color:white}.checkin-popover>small{display:block;margin-top:11px;text-align:center;color:#6d8185;font-size:6px}@keyframes checkinDeploy{from{opacity:0;transform:translateY(25px) scale(.8)}}
+@media(max-width:700px){.checkin-popover{left:9px;right:9px;bottom:91px;width:auto}.checkin-popover:after{right:28px}}
+
+/* Two-button flight deck: the rest of the surface is live instrumentation. */
+.dock{width:720px!important;max-width:calc(100vw - 170px)!important;display:grid!important;grid-template-columns:112px 78px 116px 68px 128px 102px!important;justify-content:center!important;align-items:center!important;gap:8px!important}
+.dock .cockpit-action{width:78px!important;min-width:78px!important;flex:none!important}.dock .dock-main{grid-column:4;width:66px!important;min-width:66px!important;flex:none!important}
+.cockpit-readout{height:52px;min-width:0;padding:8px 10px;display:grid;align-content:center;gap:2px;overflow:hidden;border:1px solid #52717a;border-radius:8px 3px 8px 3px;background:linear-gradient(180deg,#0c303b,#061a22);box-shadow:inset 0 0 14px #000,0 2px 0 #020b0e;color:#8ce7ec}.cockpit-readout span,.cockpit-readout small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:800 4.5px/1.1 var(--font-geist-mono),monospace;letter-spacing:.12em;color:#527e87}.cockpit-readout strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:900 11px/1.1 var(--font-geist-mono),monospace;color:#b9f8f8;text-shadow:0 0 9px #58dce6}.cockpit-mode small{color:#70daa8}.cockpit-nav strong{color:#8fcde7}
+.cockpit-stack{height:52px;padding:6px 8px;display:grid;gap:3px;border:1px solid #5a7177;border-radius:4px;background:linear-gradient(#233b42,#0b2028);box-shadow:inset 0 1px #6f878c,inset 0 -5px 10px #001017}.cockpit-stack>span{min-width:0;display:grid;grid-template-columns:6px 34px 1fr;align-items:center;gap:3px;font:800 4.5px/1 var(--font-geist-mono),monospace;letter-spacing:.07em;color:#6d939b}.cockpit-stack b{overflow:hidden;text-overflow:ellipsis;text-align:right;color:#c0e7e9;font-size:4.5px}.cockpit-stack i{width:5px;height:5px;border-radius:50%;background:#556267;box-shadow:inset 0 1px #829094}.cockpit-stack i.online{background:#65e3a7;box-shadow:0 0 7px #65e3a7}.cockpit-stack i.warn{background:#ffbd59;box-shadow:0 0 7px #ffbd59}
+.cockpit-gauges{height:54px;display:grid;grid-template-columns:1fr 1fr;gap:7px}.cockpit-gauges>div{position:relative;display:grid;place-content:center;text-align:center;border:2px solid #b9d1d2;border-radius:50%;background:conic-gradient(#4ed0df 0 var(--gauge),#173740 var(--gauge) 100%);box-shadow:0 0 0 2px #42585d,0 2px 4px #0008,0 0 9px #37c7d744}.cockpit-gauges>div:before{content:"";position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 38% 28%,#1c4b57,#061820 72%)}.cockpit-gauges strong,.cockpit-gauges span{position:relative;z-index:1}.cockpit-gauges strong{font:900 8px var(--font-geist-mono),monospace;color:#bff8f8}.cockpit-gauges span{font:800 3.5px var(--font-geist-mono),monospace;letter-spacing:.05em;color:#6fa1a8}
+.capture-action>span{color:#8df0bc!important}.capture-action:hover,.capture-action.active{border-color:#7aebae!important;box-shadow:inset 0 1px #bfffd9,0 0 0 2px #5dd99a77,0 0 15px #43d39266!important}
+@media(max-width:900px){.dock{width:calc(100vw - 150px)!important;grid-template-columns:94px 68px 1fr 60px 104px!important}.cockpit-nav{display:none}.dock .cockpit-action{width:68px!important;min-width:68px!important}.dock .dock-main{grid-column:4;width:58px!important;min-width:58px!important;height:58px!important;min-height:58px!important}.cockpit-stack{min-width:0}}
+@media(max-width:700px){.dock{width:calc(100vw - 18px)!important;max-width:none!important;grid-template-columns:82px 64px 58px 92px!important;padding-left:8px!important;padding-right:8px!important}.cockpit-stack{display:none}.cockpit-mode{grid-column:1}.dock .cockpit-action{grid-column:2;width:64px!important;min-width:64px!important}.dock .dock-main{grid-column:3}.cockpit-gauges{grid-column:4}.cockpit-nav{display:none}.cockpit-readout{padding:6px}.cockpit-readout strong{font-size:9px}}
+.ai-phone>header small.offline{color:#ffc0ad}.ai-phone>header small.offline i{background:#ff735f;box-shadow:0 0 8px #ff735f}.phone-prompts button:disabled{opacity:.45;filter:grayscale(.7);cursor:not-allowed}.phone-input textarea:disabled{opacity:.62;cursor:not-allowed}
+
+/* Keep browser focus feedback circular; never draw a square around the radar. */
+.neighborhood-map,.neighborhood-map:focus,.neighborhood-map:focus-visible,.neighborhood-map .map-hit-area{outline:none!important}
+.neighborhood-map .map-hit-area:focus-visible{outline:2px solid #9cf4f7!important;outline-offset:-5px!important;border-radius:50%!important;box-shadow:inset 0 0 0 3px #37bdd066,0 0 15px #51dce877!important}
+
+/* Frutiger-first typography system with readable instrument-scale sizing. */
+:root{--frutiger:"Frutiger Next","Frutiger","Frutiger LT Std","Avenir Next","Segoe UI",Arial,sans-serif}
+html,body,button,input,textarea,select,
+.zone,.zone *,.ipad-bar,.ipad-bar *,.dock,.dock *,
+.neighborhood-map,.neighborhood-map *,.ai-phone,.ai-phone *,
+.task-composer,.task-composer *,.focus-session,.focus-session *{
+  font-family:var(--frutiger)!important;
+}
+.home-zone h1{font-size:32px!important;line-height:1.04!important;letter-spacing:-.035em!important}
+.zone-title h2{font-size:26px!important;line-height:1.05!important;letter-spacing:-.03em!important}
+.connect-head h2{font-size:26px!important}.capture-lens strong{font-size:50px!important}
+.zone-kicker,.zone-title span,.now-copy>span,.plan-bottom article>span,.ai-top span,.connect-head>div:first-child>span{font-size:8px!important;line-height:1.15!important;letter-spacing:.1em!important}
+.intro,.zone-title p,.connect-head p{font-size:9px!important;line-height:1.4!important}
+.now-copy h2{font-size:20px!important;line-height:1.08!important}.now-copy p{font-size:9px!important;line-height:1.35!important}
+.task-card h3,.plan-bottom h3,.day-rail article strong{font-size:13px!important;line-height:1.15!important}
+.task-card p,.task-card>div>span,.small-stats span,.small-stats p,.plan-bottom p,.day-rail article small{font-size:7px!important;line-height:1.25!important}
+.small-stats strong{font-size:16px!important}.week-day>span{font-size:7px!important}.week-day>b{font-size:12px!important}
+.focus-room h2{font-size:20px!important}.focus-room>p,.ai-reply{font-size:9px!important;line-height:1.45!important}.ai-top strong{font-size:13px!important}
+.monitor-list span,.monitor-list em,.signal-grid span,.signal-grid small,.routine-lanes small,.routine-lanes em,.status-lines span,.status-lines b{font-size:7px!important;line-height:1.15!important}
+.monitor-list strong,.routine-lanes strong,.status-screen span{font-size:9px!important}
+.new-monitor-display span,.goal-orbit span,.capture-actions small,.life-ticket span{font-size:7px!important;line-height:1.25!important}
+.capture-actions b,.note-slots span,.connector-rack button b{font-size:9px!important}.note-slots small,.connector-rack button small,.connector-rack button em{font-size:7px!important}
+.header-location span{font-size:7px!important}.header-location strong{font-size:10px!important}.header-location small{font-size:6px!important}
+.ipad-bar .drag-hint{font-size:7px!important}.ipad-bar .drag-hint em{font-size:9px!important}
+.dock button>b{font-size:7px!important;letter-spacing:.02em!important}.dock button>small{font-size:5.5px!important;letter-spacing:.08em!important}
+.cockpit-readout span,.cockpit-readout small,.cockpit-stack>span,.cockpit-stack b{font-size:5.5px!important;line-height:1.1!important}.cockpit-readout strong{font-size:11px!important}.cockpit-gauges strong{font-size:8px!important}.cockpit-gauges span{font-size:4.5px!important}
+.neighborhood-map .district-name,.neighborhood-map .district-name:nth-of-type(3):after,.neighborhood-map .district-name:nth-of-type(4):after{font-family:var(--frutiger)!important;font-size:4.8px!important;letter-spacing:.05em!important}
+.neighborhood-map>small{font-size:6px!important;letter-spacing:.08em!important}.neighborhood-map .zoom-control span{font-size:6px!important}
+
+/* A genuinely circular world map: four readable districts, no rectangular frame. */
+.neighborhood-map .full-monitor-map{
+  background-image:
+    radial-gradient(circle at 27% 27%,#47d9ec24 0,transparent 34%),
+    radial-gradient(circle at 73% 27%,#b68af022 0,transparent 34%),
+    radial-gradient(circle at 27% 73%,#61dc9b20 0,transparent 34%),
+    radial-gradient(circle at 73% 73%,#87abc51c 0,transparent 34%),
+    radial-gradient(circle,transparent 0 31%,#8ee8ed20 31.5% 32%,transparent 32.5% 63%,#8ee8ed1b 63.5% 64%,transparent 64.5%),
+    linear-gradient(90deg,transparent 49.65%,#b5f8fa22 49.8% 50.2%,transparent 50.35%),
+    linear-gradient(transparent 49.65%,#b5f8fa22 49.8% 50.2%,transparent 50.35%)!important;
+  background-clip:padding-box!important;
+}
+.neighborhood-map .district-name{opacity:.9!important;box-shadow:0 0 8px currentColor!important}
+.neighborhood-map .district-name:nth-of-type(1){color:#aef8f8!important;border-color:#58dbe6!important}
+.neighborhood-map .district-name:nth-of-type(2){color:#98e6f5!important;border-color:#42bfd8!important}
+.neighborhood-map .district-name:nth-of-type(3){color:#dcc2ff!important;border-color:#a47ad9!important}
+.neighborhood-map .district-name:nth-of-type(4){color:#aaf4c9!important;border-color:#58c98b!important}
+.neighborhood-map .district-name:nth-of-type(5){color:#ffe0a0!important;border-color:#d9aa53!important}
+.neighborhood-map .district-name:nth-of-type(6){color:#c4d6e7!important;border-color:#8098ae!important}
+.ai-phone>header>span{font-size:7px!important}.ai-phone>header h2{font-size:22px!important}.ai-phone>header small{font-size:6.5px!important}.phone-welcome strong{font-size:17px!important}.phone-welcome p,.phone-chat article p,.phone-input textarea{font-size:10px!important}.phone-chat article>span{font-size:6px!important}.phone-prompts button{font-size:7px!important}.ai-phone>footer{font-size:6.5px!important}
+.task-composer>span,.task-composer label,.focus-session span,.focus-session small{font-size:7px!important}
+@media(max-width:700px){.home-zone h1{font-size:29px!important}.zone-title h2,.connect-head h2{font-size:23px!important}.dock button>b{font-size:6px!important}.dock button>small{font-size:4.8px!important}.cockpit-readout strong{font-size:9px!important}}
