@@ -19,15 +19,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
   const image = `${protocol}://${host}/og.png`;
   return {
-    title: "Money OS — Personal Finance Command Center",
-    description: "A private, age-aware command center for accounts, spending, income, savings, and smarter money decisions.",
-    applicationName: "Money OS",
+    title: "Naviwork — Field Operations Command Center",
+    description: "Live dispatch operations, route-gap opportunities, revenue visibility, and approval-first customer outreach for mobile service businesses.",
+    applicationName: "Naviwork",
     manifest: "/site.webmanifest",
     formatDetection: { telephone: false, email: false, address: false },
-    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Money OS" },
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Naviwork" },
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/og.png" },
-    openGraph: { title: "Money OS", description: "See every account. Understand every dollar. Build your next move.", images: [image] },
-    twitter: { card: "summary_large_image", title: "Money OS", description: "Your private personal finance command center.", images: [image] },
+    openGraph: { title: "Naviwork", description: "Field operations, route-gap opportunities, and revenue in one dispatch command center.", images: [image] },
+    twitter: { card: "summary_large_image", title: "Naviwork", description: "Field operations, route-gap opportunities, and revenue in one dispatch command center.", images: [image] },
   };
 }
 
