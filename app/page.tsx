@@ -8,6 +8,7 @@ type View = "COMMAND" | "MAP" | "GAPS" | "REVENUE" | "CREWS" | "SETTINGS";
 type MapLayer = "CREWS" | "JOBS" | "GAPS";
 type SettingsTab = "PROFILE" | "FIELD OPS" | "OUTREACH" | "CONNECTIONS";
 type Theme = "silver" | "daylight" | "night";
+type AccountType = "field_service" | "last_mile" | "freight" | "public_works";
 type Modal = "outreach" | "invoice" | "crew" | "message" | null;
 
 type Crew = {
@@ -34,6 +35,7 @@ type IntegrationKey = "mapbox" | "stripe" | "quickbooks" | "calendar";
 
 type AppSettings = {
   businessName: string;
+  accountType: AccountType;
   serviceRadius: number;
   dispatchMode: "Approval first" | "Auto-dispatch";
   startHour: string;
@@ -47,6 +49,7 @@ type AppSettings = {
 
 const defaultSettings: AppSettings = {
   businessName: "Bay Breeze Mechanical",
+  accountType: "field_service",
   serviceRadius: 18,
   dispatchMode: "Approval first",
   startHour: "07:00",
@@ -59,13 +62,43 @@ const defaultSettings: AppSettings = {
 };
 
 const navItems: Array<{ id: View; label: string; icon: string; hint: string }> = [
-  { id: "COMMAND", label: "Command", icon: "◉", hint: "Today at a glance" },
-  { id: "MAP", label: "Live map", icon: "⌖", hint: "Hayward crews" },
+  { id: "MAP", label: "Dispatch", icon: "⌖", hint: "Live operations board" },
+  { id: "COMMAND", label: "Overview", icon: "◉", hint: "Performance & pulse" },
   { id: "GAPS", label: "Route gaps", icon: "✦", hint: "2 opportunities" },
   { id: "REVENUE", label: "Revenue", icon: "$", hint: "Invoices & payments" },
   { id: "CREWS", label: "Crews", icon: "◎", hint: "4 active teams" },
   { id: "SETTINGS", label: "Setup", icon: "⚙", hint: "Rules & connections" },
 ];
+
+const accountProfiles: Record<AccountType, { label: string; people: string; work: string; exception: string }> = {
+  field_service: { label: "Field service", people: "Crews", work: "Jobs", exception: "Route gaps" },
+  last_mile: { label: "Last-mile delivery", people: "Drivers", work: "Stops", exception: "Exceptions" },
+  freight: { label: "Freight & fleet", people: "Units", work: "Loads", exception: "Delays" },
+  public_works: { label: "Public works", people: "Field units", work: "Work orders", exception: "Incidents" },
+};
+
+const dispatchFeeds: Record<AccountType, Array<{ id: string; priority: string; title: string; meta: string; crew: string }>> = {
+  field_service: [
+    { id: "D-2048", priority: "P1", title: "No-cool call · senior resident", meta: "Mission–Foothill · 9 min", crew: "RS" },
+    { id: "D-2047", priority: "P2", title: "Commercial freezer alarm", meta: "Downtown · SLA 42 min", crew: "DK" },
+    { id: "D-2046", priority: "P3", title: "Early finish capacity", meta: "Winton Grove · +$520", crew: "JM" },
+  ],
+  last_mile: [
+    { id: "D-2048", priority: "P1", title: "Temperature-sensitive delivery", meta: "Mission–Foothill · due 10:55", crew: "RS" },
+    { id: "D-2047", priority: "P2", title: "Access exception at stop 18", meta: "Downtown · customer waiting", crew: "DK" },
+    { id: "D-2046", priority: "P3", title: "Driver capacity recovered", meta: "Winton Grove · 6 stops", crew: "JM" },
+  ],
+  freight: [
+    { id: "D-2048", priority: "P1", title: "High-value load off route", meta: "I-880 corridor · 7 min", crew: "RS" },
+    { id: "D-2047", priority: "P2", title: "Dock window at risk", meta: "Hayward terminal · 42 min", crew: "DK" },
+    { id: "D-2046", priority: "P3", title: "Backhaul capacity open", meta: "Winton Grove · 3 pallets", crew: "JM" },
+  ],
+  public_works: [
+    { id: "D-2048", priority: "P1", title: "Signal cabinet offline", meta: "Mission Blvd · 9 min", crew: "RS" },
+    { id: "D-2047", priority: "P2", title: "Water leak inspection", meta: "Downtown · reported 10:14", crew: "DK" },
+    { id: "D-2046", priority: "P3", title: "Unit available early", meta: "Winton Grove · 42 min", crew: "JM" },
+  ],
+};
 
 const crews: Crew[] = [
   { id: "RS", name: "Rina Singh", vehicle: "Truck 07", neighborhood: "Downtown Hayward", assignment: "Open service window", status: "Available 10:45", next: "12 min · 3.1 mi", lngLat: [-122.0808, 37.6688], pin: { left: "48%", top: "39%" } },
@@ -94,7 +127,7 @@ const initialInvoices: Invoice[] = [
 
 const viewTitles: Record<View, { eyebrow: string; title: string; copy: string }> = {
   COMMAND: { eyebrow: "TAPE 01 · SATURDAY OCT 17", title: "Good morning, Morgan.", copy: "Your Hayward field operation is on pace. Two openings can still become revenue." },
-  MAP: { eyebrow: "LIVE FEED · HAYWARD CA", title: "Field map", copy: "Follow crews, scheduled work, and open capacity across the service area." },
+  MAP: { eyebrow: "DISPATCH CHANNEL 01 · HAYWARD CA", title: "Live dispatch control", copy: "See the field, triage new work, and move the right unit with confidence." },
   GAPS: { eyebrow: "OPPORTUNITY SCAN", title: "Route gaps", copy: "Review suggested work before anything reaches a customer." },
   REVENUE: { eyebrow: "MONEY FEED", title: "Revenue & collections", copy: "Track today’s value and turn outstanding work into collected revenue." },
   CREWS: { eyebrow: "FIELD CHANNEL", title: "Crews", copy: "See who is moving, who is free, and what each team needs next." },
@@ -102,7 +135,7 @@ const viewTitles: Record<View, { eyebrow: string; title: string; copy: string }>
 };
 
 export default function Home() {
-  const [active, setActive] = useState<View>("COMMAND");
+  const [active, setActive] = useState<View>("MAP");
   const [mapLayer, setMapLayer] = useState<MapLayer>("CREWS");
   const [selectedCrewId, setSelectedCrewId] = useState("RS");
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("PROFILE");
@@ -134,6 +167,9 @@ export default function Home() {
   const [syncing, setSyncing] = useState(false);
   const [saveState, setSaveState] = useState<"saved" | "saving" | "local">("local");
   const [commandOpen, setCommandOpen] = useState(false);
+  const [selectedDispatchId, setSelectedDispatchId] = useState("D-2048");
+  const [assignedDispatches, setAssignedDispatches] = useState<string[]>([]);
+  const [createdDispatch, setCreatedDispatch] = useState(false);
 
   const selectedCrew = crews.find((crew) => crew.id === selectedCrewId) ?? crews[0];
   const selectedInvoice = invoices.find((invoice) => invoice.id === selectedInvoiceId) ?? invoices[0];
@@ -255,10 +291,11 @@ export default function Home() {
     <main className={`app-shell theme-${settings.theme} ${settings.compact ? "is-compact" : ""} ${settings.motion ? "" : "reduce-motion"}`}>
       <div className="ambient-grid" aria-hidden="true" />
       <header className="topbar">
-        <button type="button" className="brand" onClick={() => goTo("COMMAND")} aria-label="Open command overview">
+        <button type="button" className="brand" onClick={() => goTo("MAP")} aria-label="Open live dispatch board">
           <span className="lens-mark"><i /></span>
           <span><strong>NAVIWORK</strong><small>FIELD COMMAND · HI8</small></span>
         </button>
+        <label className="account-switch"><span>OPS TYPE</span><select value={settings.accountType} onChange={(event) => updateSettings("accountType", event.target.value as AccountType)}>{(Object.keys(accountProfiles) as AccountType[]).map((type) => <option key={type} value={type}>{accountProfiles[type].label}</option>)}</select></label>
         <button type="button" className={`record-strip ${tracking ? "is-live" : ""}`} onClick={() => setTracking((current) => !current)} aria-pressed={tracking}>
           <span className="rec-dot" />
           <b>{tracking ? "REC · LIVE FIELD LINK" : "PAUSED · FIELD LINK"}</b>
@@ -286,7 +323,7 @@ export default function Home() {
         </div>
       </aside>
 
-      <section className="workspace">
+      <section className={`workspace ${active === "MAP" ? "dispatch-workspace" : ""}`}>
         <div className="page-heading">
           <div><span>{pageTitle.eyebrow}</span><h1>{pageTitle.title}</h1><p>{pageTitle.copy}</p></div>
           <div className="heading-actions">
@@ -311,6 +348,14 @@ export default function Home() {
               setZoom={setMapZoom}
               recenterKey={recenterKey}
               showNotice={showNotice}
+              accountType={settings.accountType}
+              selectedDispatchId={selectedDispatchId}
+              selectDispatch={(id, crewId) => { setSelectedDispatchId(id); setSelectedCrewId(crewId); setMapLayer("JOBS"); }}
+              assignedDispatches={assignedDispatches}
+              assignDispatch={(id) => { setAssignedDispatches((current) => current.includes(id) ? current : [...current, id]); showNotice(`${id} assigned to ${selectedCrew.name}.`); }}
+              createdDispatch={createdDispatch}
+              createDispatch={() => { setCreatedDispatch(true); setSelectedDispatchId("D-2049"); setMapLayer("JOBS"); showNotice("New dispatch D-2049 added to the board."); }}
+              openMessage={() => setModal("message")}
             />
           )}
           {active === "GAPS" && (
@@ -382,29 +427,54 @@ function Metric({ label, value, detail, action }: { label: string; value: string
   return <button type="button" className="metric-card" onClick={action}><span>{label}</span><strong>{value}</strong><small>{detail}</small><i>↗</i></button>;
 }
 
-function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, setZoom, recenterKey, showNotice }: { layer: MapLayer; setLayer: (layer: MapLayer) => void; selectedCrew: Crew; selectCrew: (id: string) => void; openCrew: () => void; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; showNotice: (text: string) => void }) {
+function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, setZoom, recenterKey, showNotice, accountType, selectedDispatchId, selectDispatch, assignedDispatches, assignDispatch, createdDispatch, createDispatch, openMessage }: { layer: MapLayer; setLayer: (layer: MapLayer) => void; selectedCrew: Crew; selectCrew: (id: string) => void; openCrew: () => void; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; showNotice: (text: string) => void; accountType: AccountType; selectedDispatchId: string; selectDispatch: (id: string, crewId: string) => void; assignedDispatches: string[]; assignDispatch: (id: string) => void; createdDispatch: boolean; createDispatch: () => void; openMessage: () => void }) {
+  const [routeAssist, setRouteAssist] = useState(true);
+  const profile = accountProfiles[accountType];
+  const feed = createdDispatch ? [...dispatchFeeds[accountType], { id: "D-2049", priority: "NEW", title: "Unassigned dispatch draft", meta: "Hayward · awaiting details", crew: selectedCrew.id }] : dispatchFeeds[accountType];
+  const activeDispatch = feed.find((item) => item.id === selectedDispatchId) ?? feed[0];
+  const layerLabels: Record<MapLayer, string> = { CREWS: profile.people, JOBS: profile.work, GAPS: profile.exception };
   return (
-    <div className="map-layout">
-      <section className="camera-panel map-panel">
-        <div className="map-toolbar">
-          <div className="segmented">{(["CREWS", "JOBS", "GAPS"] as MapLayer[]).map((item) => <button type="button" key={item} className={layer === item ? "active" : ""} onClick={() => setLayer(item)}>{item}</button>)}</div>
-          <div className="map-tools"><button type="button" onClick={() => setZoom(Math.min(1.35, zoom + 0.1))} aria-label="Zoom in">＋</button><button type="button" onClick={() => setZoom(Math.max(.8, zoom - 0.1))} aria-label="Zoom out">−</button><button type="button" onClick={() => { setZoom(1); showNotice("Map fit to the full Hayward service area."); }} aria-label="Fit map">⌖</button></div>
+    <div className="dispatch-board">
+      <section className="instrument-rack" aria-label="Live operation status">
+        <div><span>ACTIVE</span><b>04</b><small>{profile.people}</small></div><div><span>OPEN</span><b>09</b><small>{profile.work}</small></div><div className="warn"><span>PRIORITY</span><b>02</b><small>Need dispatch</small></div><div><span>ON TIME</span><b>92%</b><small>Network wide</small></div><div className="signal"><i /><span>RADIO + GPS</span><b>ONLINE</b></div>
+      </section>
+
+      <aside className="camera-panel dispatch-queue">
+        <PanelHeader label="INCOMING DISPATCH" detail={`${feed.length} OPEN`} />
+        <div className="queue-tabs"><button type="button" className="active" onClick={() => showNotice("Showing all open dispatches.")}>OPEN</button><button type="button" onClick={() => showNotice(`${assignedDispatches.length} dispatches are assigned.`)}>ASSIGNED</button></div>
+        <div className="queue-list">
+          {feed.map((item) => <button type="button" key={item.id} className={selectedDispatchId === item.id ? "active" : ""} onClick={() => selectDispatch(item.id, item.crew)}><em className={`priority-${item.priority.toLowerCase()}`}>{item.priority}</em><span><b>{item.title}</b><small>{item.id} · {item.meta}</small></span><i>{assignedDispatches.includes(item.id) ? "✓" : "›"}</i></button>)}
         </div>
-        <MapViewport layer={layer} selectedCrewId={selectedCrew.id} onSelectCrew={selectCrew} zoom={zoom} recenterKey={recenterKey} />
+        <button type="button" className="new-dispatch-button" onClick={createDispatch} disabled={createdDispatch}><span>＋</span>{createdDispatch ? "Draft added" : "Create dispatch"}</button>
+      </aside>
+
+      <section className="camera-panel map-panel pilot-map">
+        <div className="map-toolbar">
+          <div className="segmented">{(["CREWS", "JOBS", "GAPS"] as MapLayer[]).map((item) => <button type="button" key={item} className={layer === item ? "active" : ""} onClick={() => setLayer(item)}>{layerLabels[item].toUpperCase()}</button>)}</div>
+          <div className="map-readout-pilot"><span>LAT 37.6688</span><span>LON −122.0808</span><b>10:32:18</b></div>
+          <div className="map-tools"><button type="button" onClick={() => setZoom(Math.min(1.35, zoom + 0.1))} aria-label="Zoom in">＋</button><button type="button" onClick={() => setZoom(Math.max(.8, zoom - 0.1))} aria-label="Zoom out">−</button><button type="button" onClick={() => { setZoom(1); showNotice("Map fit to the full Hayward operating area."); }} aria-label="Fit map">⌖</button></div>
+        </div>
+        <div className="map-frame"><MapViewport layer={layer} selectedCrewId={selectedCrew.id} onSelectCrew={selectCrew} zoom={zoom} recenterKey={recenterKey} /><div className="map-reticle" aria-hidden="true"><i /><i /></div><div className="north-indicator">N<br />↑</div><div className="dispatch-tag"><span>{activeDispatch.priority}</span><b>{activeDispatch.id}</b><small>{activeDispatch.title}</small></div></div>
         <div className="map-status"><span><i /> GPS SYNCED · 4/4 REPORTING</span><b>HAYWARD · SAN LEANDRO · UNION CITY</b></div>
       </section>
-      <aside className="map-side">
-        <section className="camera-panel selected-card">
-          <PanelHeader label="SELECTED CREW" detail={selectedCrew.vehicle.toUpperCase()} />
-          <div className="crew-identity"><span>{selectedCrew.id}</span><div><h3>{selectedCrew.name}</h3><p>{selectedCrew.neighborhood}</p></div></div>
-          <dl><div><dt>Current</dt><dd>{selectedCrew.assignment}</dd></div><div><dt>Status</dt><dd><i /> {selectedCrew.status}</dd></div><div><dt>Next update</dt><dd>{selectedCrew.next}</dd></div></dl>
-          <div className="stacked-actions"><button type="button" className="primary-button" onClick={() => selectedCrew.id === "RS" ? setLayer("GAPS") : openCrew()}>{selectedCrew.id === "RS" ? "Show nearby openings" : "Open crew details"}</button><button type="button" className="secondary-button" onClick={openCrew}>View schedule</button></div>
-        </section>
-        <section className="camera-panel crew-channel">
-          <PanelHeader label="CREW CHANNEL" detail="4 ONLINE" />
-          {crews.map((crew) => <button type="button" key={crew.id} className={selectedCrew.id === crew.id ? "active" : ""} onClick={() => selectCrew(crew.id)}><span>{crew.id}</span><div><b>{crew.name}</b><small>{crew.status}</small></div><i>›</i></button>)}
-        </section>
+
+      <aside className="camera-panel unit-console">
+        <PanelHeader label={`SELECTED ${profile.people.slice(0, -1).toUpperCase()}`} detail={selectedCrew.vehicle.toUpperCase()} />
+        <div className="crew-identity"><span>{selectedCrew.id}</span><div><h3>{selectedCrew.name}</h3><p>{selectedCrew.neighborhood}</p></div><em>● LIVE</em></div>
+        <div className="unit-gauges"><div><span>ETA</span><b>09</b><small>MIN</small></div><div><span>LOAD</span><b>68</b><small>%</small></div><div><span>SHIFT</span><b>4.2</b><small>HR</small></div></div>
+        <dl><div><dt>Current</dt><dd>{selectedCrew.assignment}</dd></div><div><dt>Status</dt><dd><i /> {selectedCrew.status}</dd></div><div><dt>Next update</dt><dd>{selectedCrew.next}</dd></div></dl>
+        <div className="dispatch-assignment"><span>SELECTED DISPATCH</span><b>{activeDispatch.id}</b><p>{activeDispatch.title}</p><button type="button" className="primary-button" onClick={() => assignDispatch(activeDispatch.id)} disabled={assignedDispatches.includes(activeDispatch.id)}>{assignedDispatches.includes(activeDispatch.id) ? `✓ Assigned to ${selectedCrew.id}` : `Assign to ${selectedCrew.id}`}</button></div>
+        <div className="unit-actions"><button type="button" onClick={openMessage}>RADIO</button><button type="button" onClick={openCrew}>DETAIL</button><button type="button" onClick={() => { selectCrew(crews[(crews.findIndex((crew) => crew.id === selectedCrew.id) + 1) % crews.length].id); }}>NEXT UNIT</button></div>
       </aside>
+
+      <section className="flight-deck">
+        <div className="deck-label"><span>DISPATCH CONTROL</span><b>CH 01</b></div>
+        <button type="button" className="guarded-button" onClick={openMessage}><i>◉</i><span><b>ALL CALL</b><small>Radio selected unit</small></span></button>
+        <button type="button" className={routeAssist ? "cockpit-button active" : "cockpit-button"} onClick={() => { setRouteAssist((value) => !value); showNotice(`Route assist ${routeAssist ? "disengaged" : "engaged"}.`); }}><i>↝</i><span><b>AUTO ROUTE</b><small>{routeAssist ? "Engaged" : "Standby"}</small></span></button>
+        <button type="button" className="cockpit-button" onClick={() => setLayer("GAPS")}><i>⌁</i><span><b>SCAN {profile.exception.toUpperCase()}</b><small>Find risk & capacity</small></span></button>
+        <button type="button" className="cockpit-button" onClick={() => { setZoom(1); showNotice("Tactical map recentered."); }}><i>⌖</i><span><b>RECENTER</b><small>Hayward base</small></span></button>
+        <button type="button" className="launch-button" onClick={createDispatch} disabled={createdDispatch}><i>＋</i><span><b>NEW DISPATCH</b><small>{createdDispatch ? "Draft on board" : "Open assignment"}</small></span></button>
+      </section>
     </div>
   );
 }
@@ -519,7 +589,7 @@ function SettingsView({ tab, setTab, settings, updateSettings, toggleIntegration
     <div className="settings-layout camera-panel">
       <nav className="settings-nav" aria-label="Settings sections">{(["PROFILE", "FIELD OPS", "OUTREACH", "CONNECTIONS"] as SettingsTab[]).map((item, index) => <button type="button" className={tab === item ? "active" : ""} onClick={() => setTab(item)} key={item}><i>0{index + 1}</i><span>{item}</span><b>›</b></button>)}</nav>
       <section className="settings-content">
-        {tab === "PROFILE" && <><SettingsHeading title="Business profile" copy="The information dispatchers see across the workspace." /><label className="field"><span>Business name</span><input value={settings.businessName} onChange={(event) => updateSettings("businessName", event.target.value)} /></label><div className="field-pair"><label className="field"><span>Home base</span><input value="Hayward, California" readOnly /></label><label className="field"><span>Service radius</span><select value={settings.serviceRadius} onChange={(event) => updateSettings("serviceRadius", Number(event.target.value))}><option value={12}>12 miles</option><option value={18}>18 miles</option><option value={25}>25 miles</option></select></label></div><button type="button" className="customize-row" onClick={openCustomizer}><span><i>◐</i><b>Appearance</b><small>{settings.theme} theme · {settings.compact ? "compact" : "comfortable"}</small></span><em>Customize ›</em></button></>}
+        {tab === "PROFILE" && <><SettingsHeading title="Business profile" copy="Choose your operation type to adapt dispatch language and workflows across the app." /><div className="field-pair"><label className="field"><span>Business name</span><input value={settings.businessName} onChange={(event) => updateSettings("businessName", event.target.value)} /></label><label className="field"><span>Account type</span><select value={settings.accountType} onChange={(event) => updateSettings("accountType", event.target.value as AccountType)}>{(Object.keys(accountProfiles) as AccountType[]).map((type) => <option key={type} value={type}>{accountProfiles[type].label}</option>)}</select></label></div><div className="account-preview"><span>ACTIVE OPERATIONS PROFILE</span><b>{accountProfiles[settings.accountType].label}</b><small>{accountProfiles[settings.accountType].people} · {accountProfiles[settings.accountType].work} · {accountProfiles[settings.accountType].exception}</small></div><div className="field-pair"><label className="field"><span>Home base</span><input value="Hayward, California" readOnly /></label><label className="field"><span>Operating radius</span><select value={settings.serviceRadius} onChange={(event) => updateSettings("serviceRadius", Number(event.target.value))}><option value={12}>12 miles</option><option value={18}>18 miles</option><option value={25}>25 miles</option></select></label></div><button type="button" className="customize-row" onClick={openCustomizer}><span><i>◐</i><b>Appearance</b><small>{settings.theme} theme · {settings.compact ? "compact" : "comfortable"}</small></span><em>Customize ›</em></button></>}
         {tab === "FIELD OPS" && <><SettingsHeading title="Field operations" copy="Control dispatch behavior and the workday guardrails." /><div className="choice-grid"><button type="button" className={settings.dispatchMode === "Approval first" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Approval first")}><i>✓</i><b>Approval first</b><small>A dispatcher approves route changes.</small></button><button type="button" className={settings.dispatchMode === "Auto-dispatch" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Auto-dispatch")}><i>⚡</i><b>Auto-dispatch</b><small>Qualified gaps can be filled automatically.</small></button></div><div className="field-pair"><label className="field"><span>Day starts</span><input type="time" value={settings.startHour} onChange={(event) => updateSettings("startHour", event.target.value)} /></label><label className="field"><span>Day ends</span><input type="time" value={settings.endHour} onChange={(event) => updateSettings("endHour", event.target.value)} /></label></div><div className="info-note"><i>i</i><span><b>Hayward operating area</b><small>{settings.serviceRadius}-mile service radius centered on Downtown Hayward.</small></span></div></>}
         {tab === "OUTREACH" && <><SettingsHeading title="Customer outreach" copy="Choose how suggested messages are handled." /><ToggleRow label="Enable gap-fill outreach" copy="Show eligible customers when a route opening appears." value={settings.outreachEnabled} toggle={() => updateSettings("outreachEnabled", !settings.outreachEnabled)} /><div className="message-template"><span>EARLIER APPOINTMENT TEMPLATE</span><p>Hi {'{first name}'} — we have an earlier opening today at {'{time}'}. Would you like us to move up your {'{service}'}? Reply YES to accept.</p><small>Variables are filled automatically. Every message remains editable before sending.</small></div></>}
         {tab === "CONNECTIONS" && <><SettingsHeading title="Connections" copy="Bring schedules, payments, and customer records into one view." /><div className="integration-grid"><IntegrationCard id="mapbox" name="Mapbox" category="Live maps & routing" connected={settings.integrations.mapbox} toggle={() => toggleIntegration("mapbox")} /><IntegrationCard id="calendar" name="Google Calendar" category="Jobs & availability" connected={settings.integrations.calendar} toggle={() => toggleIntegration("calendar")} /><IntegrationCard id="stripe" name="Stripe" category="Payments & deposits" connected={settings.integrations.stripe} toggle={() => toggleIntegration("stripe")} /><IntegrationCard id="quickbooks" name="QuickBooks" category="Invoices & accounting" connected={settings.integrations.quickbooks} toggle={() => toggleIntegration("quickbooks")} /></div><p className="integration-note">Demo connections save their state now. Production OAuth credentials can be added during deployment.</p></>}
