@@ -1,90 +1,38 @@
 "use client";
+import { useEffect, useRef, useState } from "react";
 
-import { useEffect, useState } from "react";
-
-type Tab = "Command" | "Schedule" | "Crews" | "Customers" | "Revenue";
-
-const crewData = [
-  { initials: "JM", name: "J. Martinez", vehicle: "Van 14", status: "On site", place: "Westlake · AC tune-up", color: "cyan", x: 42, y: 55 },
-  { initials: "RS", name: "R. Singh", vehicle: "Truck 07", status: "Available 10:45", place: "Ridgeview · 12 min away", color: "lime", x: 68, y: 30 },
-  { initials: "DK", name: "D. Kim", vehicle: "Van 09", status: "En route", place: "Downtown · Water heater", color: "orange", x: 25, y: 70 },
-  { initials: "AB", name: "A. Brown", vehicle: "Truck 11", status: "Wraps at 11:20", place: "North Loop · Panel upgrade", color: "violet", x: 76, y: 74 },
+type View = "COMMAND" | "MAP" | "ROUTE GAP" | "REVENUE" | "CREWS" | "SETUP";
+const views: { id: View; label: string; x: number; y: number }[] = [
+  { id: "COMMAND", label: "COMMAND", x: 420, y: 330 }, { id: "MAP", label: "LIVE MAP", x: 1180, y: 330 }, { id: "ROUTE GAP", label: "ROUTE GAPS", x: 1940, y: 330 },
+  { id: "REVENUE", label: "REVENUE", x: 420, y: 930 }, { id: "CREWS", label: "CREWS", x: 1180, y: 930 }, { id: "SETUP", label: "SETTINGS", x: 1940, y: 930 },
 ];
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<Tab>("Command");
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [alertOpen, setAlertOpen] = useState(true);
-  const [toast, setToast] = useState("");
-  const [clock, setClock] = useState("");
-
-  useEffect(() => {
-    const tick = () => setClock(new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date()));
-    tick(); const timer = window.setInterval(tick, 1000); return () => window.clearInterval(timer);
-  }, []);
-  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(""), 3500); return () => window.clearTimeout(timer); }, [toast]);
-  const announce = (message: string) => setToast(message);
-
-  return (
-    <main className="navi-shell">
-      <header className="topbar">
-        <button className="brand" onClick={() => setActiveTab("Command")} aria-label="Naviwork command center">
-          <span className="brand-orb"><i /></span><span><b>NAVIWORK</b><small>FIELD OPERATIONS</small></span>
-        </button>
-        <div className="live-pill"><span className="pulse" /> LIVE OPERATIONS <b>·</b> {clock || "--:--"}</div>
-        <div className="top-actions"><button className="help">?</button><button className="avatar" onClick={() => setSettingsOpen(true)}>MG</button></div>
-      </header>
-
-      <nav className="navrail" aria-label="Main navigation">
-        <span className="rail-label">OPERATIONS</span>
-        {(["Command", "Schedule", "Crews", "Customers", "Revenue"] as Tab[]).map((item, index) => <button key={item} onClick={() => setActiveTab(item)} className={activeTab === item ? "selected" : ""}><i>{["◉", "▦", "◌", "◎", "◇"][index]}</i>{item}</button>)}
-        <span className="rail-label bottom">WORKSPACE</span>
-        <button onClick={() => setSettingsOpen(true)}><i>⚙</i>Settings</button>
-      </nav>
-
-      <section className="workspace">
-        <div className="page-heading">
-          <div><p>GOOD MORNING, MORGAN</p><h1>{activeTab === "Command" ? "Dispatch command center" : activeTab}</h1><span>Thursday, October 17 · Austin service territory</span></div>
-          <div className="heading-actions"><button className="subtle-button" onClick={() => announce("Today’s dispatch brief is ready.")}>⌁ DAILY BRIEF</button><button className="aero-button" onClick={() => setSettingsOpen(true)}>⌘ CONFIGURE WORKSPACE</button></div>
-        </div>
-
-        {activeTab !== "Command" ? <div className="coming-panel"><span>◈</span><h2>{activeTab} view</h2><p>This workspace module is ready for your live data connection. Return to Command for the operational overview.</p><button className="aero-button" onClick={() => setActiveTab("Command")}>OPEN COMMAND CENTER</button></div> : <>
-          <section className="metrics-grid">
-            <article><span className="metric-icon revenue">$</span><div><small>REVENUE ON DECK</small><strong>$12,840</strong><em>↑ 18% vs. last Thursday</em></div><button onClick={() => setActiveTab("Revenue")}>VIEW ›</button></article>
-            <article><span className="metric-icon open">↗</span><div><small>OPEN CAPACITY</small><strong>3h 25m</strong><em>Across 4 field crews</em></div><button onClick={() => announce("Opening schedule gaps.")}>ROUTE ›</button></article>
-            <article><span className="metric-icon invoice">▤</span><div><small>OUTSTANDING</small><strong>$4,260</strong><em>6 invoices need attention</em></div><button onClick={() => setActiveTab("Revenue")}>COLLECT ›</button></article>
-            <article><span className="metric-icon jobs">✓</span><div><small>JOBS COMPLETE</small><strong>7 / 16</strong><em>On pace for today</em></div><button onClick={() => announce("7 completed jobs reconciled.")}>DETAILS ›</button></article>
-          </section>
-
-          <section className="dashboard-grid">
-            <article className="map-card glass-card">
-              <header><div><span className="eyebrow">LIVE FIELD MAP</span><h2>Crew coverage</h2></div><div className="map-tools"><button>−</button><button>+</button><button>⌖</button></div></header>
-              <div className="map-stage" aria-label="Map of Austin service territory">
-                <div className="map-water water-one" /><div className="map-water water-two" />
-                <div className="road road-a" /><div className="road road-b" /><div className="road road-c" /><div className="road road-d" />
-                <span className="map-name north">NORTH LOOP</span><span className="map-name downtown">DOWNTOWN</span><span className="map-name west">WESTLAKE</span><span className="map-name east">EAST AUSTIN</span>
-                {crewData.map((crew) => <button className={`crew-pin ${crew.color}`} key={crew.name} style={{ left: `${crew.x}%`, top: `${crew.y}%` }} onClick={() => announce(`${crew.name} · ${crew.status} · ${crew.place}`)}><b>{crew.initials}</b><span className="ping" /></button>)}
-                <div className="coverage-ring"><span>12 MIN</span></div><div className="map-legend"><i className="legend-dot cyan" /> Active crew <i className="legend-dot lime" /> Available soon</div>
-              </div>
-              <footer><span><i className="pulse" /> GPS UPDATING</span><small>Last sync: just now</small></footer>
-            </article>
-
-            <article className="opportunities glass-card">
-              <header><div><span className="eyebrow">AI DISPATCH DESK</span><h2>Opportunity alerts</h2></div><span className="counter">02 READY</span></header>
-              {alertOpen ? <div className="opportunity highlight"><div className="spark">✦</div><div className="opp-copy"><span>HIGH-CONFIDENCE ROUTE GAP</span><h3>Fill R. Singh’s 10:45 window</h3><p>Two eligible customers are within 8 minutes of Ridgeview. Estimated recovered revenue: <b>$320–$520</b>.</p><div className="customer-chips"><button onClick={() => announce("S. Patel’s contact card opened.")}>S. Patel · AC diagnostic</button><button onClick={() => announce("M. Lopez’s contact card opened.")}>M. Lopez · Maintenance</button></div></div><div className="opp-actions"><button className="aero-button" onClick={() => announce("Outreach draft queued for your approval.")}>REVIEW OUTREACH</button><button className="icon-button" onClick={() => setAlertOpen(false)}>×</button></div></div> : <div className="dismissed"><span>✓</span> Opportunity handled. Naviwork is watching the next route gap.</div>}
-              <div className="opportunity"><div className="spark muted">◌</div><div className="opp-copy"><span>CREW FINISHING EARLY</span><h3>J. Martinez may free up 42 min</h3><p>Current tune-up is tracking ahead of plan. Watchlist has 3 consented customers nearby.</p></div><button className="outline-button" onClick={() => announce("This alert is now being monitored.")}>WATCH</button></div>
-              <footer><button onClick={() => announce("AI recommendations use customer consent, call-hours, and your workspace rules.")}>How recommendations work →</button></footer>
-            </article>
-
-            <article className="schedule-card glass-card"><header><div><span className="eyebrow">TODAY’S FIELD BOARD</span><h2>Open windows & next jobs</h2></div><button className="calendar-btn" onClick={() => setActiveTab("Schedule")}>▦ OCT 17</button></header><div className="schedule-list"><div className="slot active"><time>10:45<small>OPEN</small></time><span className="timeline-dot" /><div><b>R. Singh · Truck 07</b><p>Ridgeview area · 1h 15m window</p></div><button onClick={() => announce("Route gap workflow opened.")}>FILL WINDOW</button></div><div className="slot"><time>11:20<small>NEXT</small></time><span className="timeline-dot" /><div><b>D. Kim · Water heater installation</b><p>224 South Congress · Paid deposit</p></div><span className="job-state">EN ROUTE</span></div><div className="slot"><time>12:15<small>OPEN</small></time><span className="timeline-dot" /><div><b>A. Brown · Truck 11</b><p>North Loop area · 45m window</p></div><button onClick={() => announce("Route gap workflow opened.")}>FILL WINDOW</button></div><div className="slot"><time>1:00<small>NEXT</small></time><span className="timeline-dot" /><div><b>J. Martinez · AC replacement consult</b><p>Westlake · Invoice due at completion</p></div><span className="job-state">CONFIRMED</span></div></div></article>
-
-            <article className="crew-card glass-card"><header><div><span className="eyebrow">FLEET STATUS</span><h2>4 crews in the field</h2></div><button className="text-link" onClick={() => setActiveTab("Crews")}>VIEW CREWS →</button></header><div className="crew-list">{crewData.map(crew => <button className="crew-row" onClick={() => announce(`${crew.name}: ${crew.status}`)} key={crew.name}><span className={`avatar large ${crew.color}`}>{crew.initials}</span><span><b>{crew.name}</b><small>{crew.vehicle} · {crew.place}</small></span><em className={crew.color}>{crew.status}</em></button>)}</div></article>
-          </section>
-        </>}
-      </section>
-
-      {settingsOpen && <div className="setup-overlay" role="dialog" aria-modal="true" aria-labelledby="setup-title"><section className="setup-panel"><header><div><span className="eyebrow">NAVIWORK WORKSPACE SETUP</span><h2 id="setup-title">Configure your control room</h2><p>These settings stay available anytime from the command center.</p></div><button className="close" onClick={() => setSettingsOpen(false)}>×</button></header><div className="setup-progress"><b>1</b><span /><b>2</b><span /><b>3</b><span /><b>4</b><span /><b>5</b></div><div className="setup-grid"><button onClick={() => announce("Business profile settings ready to edit.")}><i>⌂</i><b>Business profile</b><small>Evergreen Mechanical · HVAC · 25 mi radius</small><em>EDIT →</em></button><button onClick={() => announce("Field operation rules ready to edit.")}><i>◉</i><b>Field operations</b><small>4 active crews · 7:00 AM–6:00 PM</small><em>EDIT →</em></button><button onClick={() => announce("Outreach controls ready to edit.")}><i>◌</i><b>Customer outreach</b><small>Approval-first · SMS enabled</small><em>EDIT →</em></button><button onClick={() => announce("Connections panel opened.")}><i>⌁</i><b>Connections</b><small>Maps connected · Add Stripe or Jobber</small><em>MANAGE →</em></button></div><footer><div><span className="ready-dot" /> 4 of 5 areas configured</div><button className="aero-button" onClick={() => { setSettingsOpen(false); announce("Workspace saved. Your command center is ready."); }}>SAVE & RETURN TO COMMAND</button></footer></section></div>}
-      {toast && <div className="toast"><span>✓</span>{toast}</div>}
-    </main>
-  );
+  const [position, setPosition] = useState({ x: -90, y: -130 }); const [dragging, setDragging] = useState(false); const [zoom, setZoom] = useState(1); const [active, setActive] = useState<View>("COMMAND"); const [notice, setNotice] = useState(""); const [outreach, setOutreach] = useState(false); const drag = useRef({ x: 0, y: 0, px: 0, py: 0 });
+  const jump = (id: View) => { const item = views.find(v => v.id === id)!; setPosition({ x: innerWidth / 2 - (item.x + 325) * zoom, y: innerHeight / 2 - (item.y + 230) * zoom }); setActive(id); };
+  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(""), 3000); return () => clearTimeout(t); }, [notice]);
+  const start = (e: React.PointerEvent) => { if ((e.target as HTMLElement).closest("button")) return; drag.current = { x: e.clientX, y: e.clientY, px: position.x, py: position.y }; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); };
+  const move = (e: React.PointerEvent) => { if (dragging) setPosition({ x: drag.current.px + e.clientX - drag.current.x, y: drag.current.py + e.clientY - drag.current.y }); };
+  return <main className="viewport">
+    <header className="monitor-bar"><button className="brand" onClick={() => jump("COMMAND")}><i>◉</i><span><b>NAVIWORK</b><small>MOBILE SERVICE COMMAND</small></span></button><div className="cam-status"><em /> LIVE FIELD LINK <b>GPS · 4 CREWS · AUSTIN</b></div><div className="bar-actions"><button onClick={() => setNotice("Dispatch line clear — no emergency overrides.")}>⌁</button><button onClick={() => jump("SETUP")}>MG</button></div></header>
+    <p className="drag-copy">DRAG TO TRAVEL ACROSS YOUR COMMAND WALL <span>·</span> click a monitor on the radar</p>
+    <section className={`canvas ${dragging ? "dragging" : ""}`} onPointerDown={start} onPointerMove={move} onPointerUp={() => setDragging(false)} onPointerCancel={() => setDragging(false)} style={{ transform: `translate3d(${position.x}px,${position.y}px,0) scale(${zoom})` }}>
+      <Monitor id="COMMAND" title="Dispatch command" sub="TODAY · FIELD OPERATIONS" active={active}>
+        <div className="command-layout"><div><div className="hero-brief"><span className="status-dot" /> <b>ALL SYSTEMS NOMINAL</b><h1>Every crew, route gap, and next move — <em>in sight.</em></h1><p>Thursday, October 17 · Austin service territory</p><div><button className="metal-button" onClick={() => jump("ROUTE GAP")}>REVIEW 2 OPPORTUNITIES</button><button className="ghost-button" onClick={() => jump("MAP")}>OPEN LIVE MAP</button></div></div><div className="mini-metrics"><Metric name="ON DECK" value="$12,840" detail="↑ 18% vs Thu" /><Metric name="OPEN CAPACITY" value="3h 25m" detail="4 field crews" /><Metric name="OUTSTANDING" value="$4,260" detail="6 invoices" /></div></div><div className="signal-board"><span>OPS SIGNAL</span><div className="signal-ring"><b>07</b><small>JOBS<br />DONE</small></div><p>7 of 16 scheduled jobs complete. Field team is on pace.</p><button onClick={() => jump("REVENUE")}>VIEW MONEY FEED ›</button></div></div>
+      </Monitor>
+      <Monitor id="MAP" title="Live field map" sub="GPS · ROUTE TELEMETRY" active={active}><div className="map-screen"><div className="grid-lines" /><i className="river r1" /><i className="river r2" /><b className="district d1">NORTH LOOP</b><b className="district d2">DOWNTOWN</b><b className="district d3">WESTLAKE</b><b className="district d4">RIDGEVIEW</b><i className="route route1" /><i className="route route2" /><CrewPin cls="pin1" name="JM" status="ON SITE" /><CrewPin cls="pin2 available" name="RS" status="OPEN 10:45" /><CrewPin cls="pin3 orange" name="DK" status="EN ROUTE" /><CrewPin cls="pin4 purple" name="AB" status="WRAPS 11:20" /><div className="map-readout"><span><i className="status-dot" /> GPS SYNCED</span><b>4 / 4 REPORTING</b></div></div><div className="map-footer"><span>CAM 01 · AUSTIN METRO</span><button onClick={() => setNotice("Live GPS feed is refreshing.")}>⌖ RECENTER</button></div></Monitor>
+      <Monitor id="ROUTE GAP" title="Route-gap desk" sub="AI ASSISTED · APPROVAL FIRST" active={active}><article className="op-card hot"><div className="ai-mark">✦</div><div><span>HIGH-CONFIDENCE ROUTE GAP</span><h2>Fill R. Singh’s 10:45 window</h2><p>Two consented customers are within 8 minutes of Ridgeview. Estimated recovered revenue: <b>$320–$520</b>.</p><div className="customer-buttons"><button>S. PATEL · AC DIAGNOSTIC</button><button>M. LOPEZ · MAINTENANCE</button></div></div><button className="metal-button" onClick={() => setOutreach(true)}>REVIEW OUTREACH</button></article><article className="op-card"><div className="ai-mark pale">◌</div><div><span>EARLY FINISH WATCH</span><h2>J. Martinez may free up 42 min</h2><p>Current tune-up is tracking ahead of plan. Watchlist has 3 eligible customers nearby.</p></div><button className="ghost-button" onClick={() => setNotice("Naviwork is watching this gap.")}>WATCH</button></article><div className="consent-note">✓ Recommendations respect consent, opt-outs, call hours, and your approval rules.</div></Monitor>
+      <Monitor id="REVENUE" title="Revenue & collections" sub="STRIPE READY · INVOICE VISIBILITY" active={active}><div className="ledger-top"><div><span>REVENUE ON DECK</span><strong>$12,840</strong><small>Scheduled service value today</small></div><div><span>COLLECTIONS</span><strong>$4,260</strong><small>6 invoices need attention</small></div><div className="arc"><b>74%</b><small>PAID</small></div></div><div className="receipt-list"><Receipt customer="W. Chen · AC replacement" amount="$4,880" state="DEPOSIT PAID" /><Receipt customer="Hill Country Dental · Electrical" amount="$1,460" state="DUE TODAY" /><Receipt customer="S. Patel · Diagnostic" amount="$320" state="OPPORTUNITY" /></div><button className="under-button" onClick={() => setNotice("Stripe payment settings are ready to connect.")}>OPEN PAYMENT SETTINGS →</button></Monitor>
+      <Monitor id="CREWS" title="Fleet & field board" sub="4 ACTIVE CREWS · 16 JOBS" active={active}><div className="crew-table">{[["JM","J. MARTINEZ","VAN 14","Westlake · AC tune-up","ON SITE"],["RS","R. SINGH","TRUCK 07","Ridgeview · 12 min away","AVAILABLE 10:45"],["DK","D. KIM","VAN 09","Downtown · Water heater","EN ROUTE"],["AB","A. BROWN","TRUCK 11","North Loop · Panel upgrade","WRAPS 11:20"]].map((c,i) => <button key={c[0]} className="crew-line" onClick={() => setNotice(`${c[1]} · ${c[4]}`)}><i className={`crew-dot c${i}`}>{c[0]}</i><span><b>{c[1]} <em>{c[2]}</em></b><small>{c[3]}</small></span><strong>{c[4]}</strong></button>)}</div><div className="crew-controls"><button onClick={() => setNotice("Crew roster is ready to edit in Workspace Setup.")}>MANAGE CREWS</button><button onClick={() => jump("SETUP")}>WORKING HOURS & RULES</button></div></Monitor>
+      <Monitor id="SETUP" title="Workspace setup" sub="YOUR CONTROL ROOM · ALWAYS AVAILABLE" active={active}><p className="setup-intro">Configure how Naviwork sees your service territory, works with your crews, and reaches customers. Nothing here is one-time onboarding.</p><div className="setup-grid">{[["01","Business profile","Evergreen Mechanical · HVAC · 25 mi radius"],["02","Field operations","4 active crews · 7 AM–6 PM · emergency rules"],["03","Customer outreach","Approval-first · SMS enabled · consent controls"],["04","Connections","Maps connected · add Stripe, Jobber, or Twilio"]].map(s => <button key={s[0]} onClick={() => setNotice(`${s[1]} settings opened.`)}><i>{s[0]}</i><b>{s[1]}</b><small>{s[2]}</small><em>EDIT ›</em></button>)}</div><div className="setup-launch"><span><i className="status-dot" /> 4 OF 5 AREAS CONFIGURED</span><button className="metal-button" onClick={() => jump("COMMAND")}>SAVE & RETURN TO COMMAND</button></div></Monitor>
+    </section>
+    <aside className="radar"><header><span>SECTOR RADAR</span><b>{active}</b><div><button onClick={() => setZoom(Math.max(.65, zoom-.1))}>−</button><button onClick={() => setZoom(Math.min(1.15, zoom+.1))}>+</button></div></header><div className="radar-face"><i className="sweep" />{views.map(v => <button key={v.id} className={active === v.id ? "radar-node active" : "radar-node"} style={{ left: `${((v.x-420)/1520)*65+17}%`, top: `${((v.y-330)/600)*58+20}%` }} onClick={() => jump(v.id)}>{v.label}</button>)}<i className="crosshair" /></div><small>CAMERA POSITION · CLICK MONITOR</small></aside>
+    <nav className="hardware-dock">{views.map(v => <button key={v.id} className={active === v.id ? "active" : ""} onClick={() => jump(v.id)}><i>{v.id === "COMMAND" ? "◉" : v.id === "MAP" ? "⌖" : v.id === "ROUTE GAP" ? "✦" : v.id === "REVENUE" ? "$" : v.id === "CREWS" ? "◌" : "⚙"}</i><span>{v.label}</span></button>)}</nav>
+    {outreach && <div className="outreach-overlay"><section><button className="modal-close" onClick={() => setOutreach(false)}>×</button><span>AI-ASSISTED OUTREACH · APPROVAL REQUIRED</span><h2>Offer an earlier appointment?</h2><p>R. Singh is available at 10:45. This SMS uses your approved service hours and contact consent settings.</p><div className="sms-preview"><b>TO: S. PATEL</b><p>Hi S. — Evergreen Mechanical has an earlier opening today at 10:45 AM. Would you like us to move up your AC diagnostic? Reply YES to accept.</p></div><footer><button className="ghost-button" onClick={() => setOutreach(false)}>CANCEL</button><button className="metal-button" onClick={() => { setOutreach(false); setNotice("Draft is queued for dispatcher approval."); }}>QUEUE FOR APPROVAL</button></footer></section></div>}
+    {notice && <div className="notice">✓ {notice}</div>}
+  </main>;
 }
+function Monitor({id,title,sub,active,children}:{id:View;title:string;sub:string;active:View;children:React.ReactNode}){const view=views.find(v=>v.id===id)!;return <article className={`monitor ${active===id?"watching":""}`} style={{left:view.x,top:view.y}}><header><div><span>{sub}</span><h2>{title}</h2></div><div className="monitor-lights"><i/><i/><i/></div></header><div className="screen">{children}</div><footer><b>NAVIWORK OPS TERMINAL</b><span>{id} · SECURE WORKSPACE</span><i>◉</i></footer></article>}
+function Metric({name,value,detail}:{name:string;value:string;detail:string}){return <article><span>{name}</span><b>{value}</b><small>{detail}</small></article>}
+function CrewPin({cls,name,status}:{cls:string;name:string;status:string}){return <button className={`crew-pin ${cls}`}><b>{name}</b><span>{status}</span></button>}
+function Receipt({customer,amount,state}:{customer:string;amount:string;state:string}){return <div><span>▤</span><b>{customer}<small>{state}</small></b><strong>{amount}</strong></div>}
