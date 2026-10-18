@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 
 type View = "COMMAND" | "MAP" | "ROUTE GAP" | "REVENUE" | "CREWS" | "SETUP";
 const views: { id: View; label: string; x: number; y: number }[] = [
-  { id: "MAP", label: "LIVE MAP", x: 420, y: 330 }, { id: "COMMAND", label: "COMMAND", x: 1180, y: 330 }, { id: "ROUTE GAP", label: "ROUTE GAPS", x: 1940, y: 330 },
-  { id: "REVENUE", label: "REVENUE", x: 420, y: 930 }, { id: "CREWS", label: "CREWS", x: 1180, y: 930 }, { id: "SETUP", label: "SETTINGS", x: 1940, y: 930 },
+  { id: "MAP", label: "LIVE MAP", x: 220, y: 145 }, { id: "COMMAND", label: "COMMAND", x: 1490, y: 170 }, { id: "ROUTE GAP", label: "ROUTE GAPS", x: 2180, y: 170 },
+  { id: "REVENUE", label: "REVENUE", x: 1490, y: 680 }, { id: "CREWS", label: "CREWS", x: 2180, y: 680 }, { id: "SETUP", label: "SETTINGS", x: 1490, y: 1180 },
 ];
 
 export default function Home() {
   const [position, setPosition] = useState({ x: -350, y: -115 }); const [dragging, setDragging] = useState(false); const [zoom, setZoom] = useState(1); const [active, setActive] = useState<View>("MAP"); const [notice, setNotice] = useState(""); const [outreach, setOutreach] = useState(false); const [mapLayer, setMapLayer] = useState<"LIVE" | "JOBS" | "GAPS">("LIVE"); const [selectedCrew, setSelectedCrew] = useState("RS"); const drag = useRef({ x: 0, y: 0, px: 0, py: 0 });
-  const jump = (id: View) => { const item = views.find(v => v.id === id)!; setPosition({ x: innerWidth / 2 - (item.x + 325) * zoom, y: innerHeight / 2 - (item.y + 230) * zoom }); setActive(id); };
+  const jump = (id: View) => { const item = views.find(v => v.id === id)!; const isMap = id === "MAP"; setPosition({ x: innerWidth / 2 - (item.x + (isMap ? 590 : 325)) * zoom, y: innerHeight / 2 - (item.y + (isMap ? 325 : 230)) * zoom }); setActive(id); };
   useEffect(() => { jump("MAP"); }, []);
   useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(""), 3000); return () => clearTimeout(t); }, [notice]);
   const start = (e: React.PointerEvent) => { if ((e.target as HTMLElement).closest("button")) return; drag.current = { x: e.clientX, y: e.clientY, px: position.x, py: position.y }; setDragging(true); e.currentTarget.setPointerCapture(e.pointerId); };
@@ -32,7 +32,7 @@ export default function Home() {
     {notice && <div className="notice">✓ {notice}</div>}
   </main>;
 }
-function Monitor({id,title,sub,active,children}:{id:View;title:string;sub:string;active:View;children:React.ReactNode}){const view=views.find(v=>v.id===id)!;return <article className={`monitor ${active===id?"watching":""}`} style={{left:view.x,top:view.y}}><header><div><span>{sub}</span><h2>{title}</h2></div><div className="monitor-lights"><i/><i/><i/></div></header><div className="screen">{children}</div><footer><b>NAVIWORK OPS TERMINAL</b><span>{id} · SECURE WORKSPACE</span><i>◉</i></footer></article>}
+function Monitor({id,title,sub,active,children}:{id:View;title:string;sub:string;active:View;children:React.ReactNode}){const view=views.find(v=>v.id===id)!;return <article className={`monitor ${id === "MAP" ? "map-primary" : ""} ${active===id?"watching":""}`} style={{left:view.x,top:view.y}}><header><div><span>{sub}</span><h2>{title}</h2></div><div className="monitor-lights"><i/><i/><i/></div></header><div className="screen">{children}</div><footer><b>NAVIWORK OPS TERMINAL</b><span>{id} · SECURE WORKSPACE</span><i>◉</i></footer></article>}
 function Metric({name,value,detail}:{name:string;value:string;detail:string}){return <article><span>{name}</span><b>{value}</b><small>{detail}</small></article>}
 function CrewPin({cls,name,status,onClick}:{cls:string;name:string;status:string;onClick:()=>void}){return <button onClick={onClick} className={`crew-pin ${cls}`}><b>{name}</b><span>{status}</span></button>}
 function JobPin({cls,label}:{cls:string;label:string}){return <i className={`job-pin ${cls}`}>{label}</i>}
