@@ -4,12 +4,14 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type View = "COMMAND" | "MAP" | "GAPS" | "REVENUE" | "CREWS" | "SETTINGS";
+type View = "COMMAND" | "MAP" | "COMMS" | "GAPS" | "REVENUE" | "CREWS" | "SETTINGS";
 type MapLayer = "CREWS" | "JOBS" | "GAPS";
 type SettingsTab = "PROFILE" | "FIELD OPS" | "OUTREACH" | "CONNECTIONS";
 type Theme = "silver" | "daylight" | "night";
 type AccountType = "field_service" | "last_mile" | "freight" | "public_works";
-type Modal = "outreach" | "invoice" | "crew" | "message" | null;
+type Modal = "outreach" | "invoice" | "crew" | "message" | "account" | null;
+type SoundCue = "confirm" | "radio" | "alert" | "sync";
+type CurrentUser = { email: string; displayName: string };
 
 type Crew = {
   id: string;
@@ -32,6 +34,8 @@ type Invoice = {
 };
 
 type IntegrationKey = "mapbox" | "stripe" | "quickbooks" | "calendar";
+type ChannelId = "dispatch" | "field" | "maintenance" | "leadership" | "rina" | "jules";
+type TeamMessage = { id: string; channel: ChannelId; author: string; initials: string; role: string; body: string; time: string; urgent?: boolean; reactions: number; pinned?: boolean };
 
 type AppSettings = {
   businessName: string;
@@ -44,6 +48,7 @@ type AppSettings = {
   theme: Theme;
   compact: boolean;
   motion: boolean;
+  sound: boolean;
   integrations: Record<IntegrationKey, boolean>;
 };
 
@@ -58,11 +63,13 @@ const defaultSettings: AppSettings = {
   theme: "silver",
   compact: false,
   motion: true,
+  sound: true,
   integrations: { mapbox: true, stripe: false, quickbooks: false, calendar: true },
 };
 
 const navItems: Array<{ id: View; label: string; icon: string; hint: string }> = [
   { id: "MAP", label: "Dispatch", icon: "⌖", hint: "Live operations board" },
+  { id: "COMMS", label: "Team comms", icon: "◍", hint: "Channels & handoffs" },
   { id: "COMMAND", label: "Overview", icon: "◉", hint: "Performance & pulse" },
   { id: "GAPS", label: "Route gaps", icon: "✦", hint: "2 opportunities" },
   { id: "REVENUE", label: "Revenue", icon: "$", hint: "Invoices & payments" },
@@ -125,9 +132,22 @@ const initialInvoices: Invoice[] = [
   { id: "1049", customer: "S. Patel", job: "AC diagnostic", amount: 320, state: "Draft" },
 ];
 
+const initialTeamMessages: TeamMessage[] = [
+  { id: "m1", channel: "dispatch", author: "Morgan Grant", initials: "MG", role: "Dispatcher", body: "Priority D-2048 is verified. Rina is the closest qualified unit—holding assignment for final confirmation.", time: "10:24", urgent: true, reactions: 3, pinned: true },
+  { id: "m2", channel: "dispatch", author: "Rina Singh", initials: "RS", role: "Truck 07", body: "Copy. I can clear Downtown in six minutes and take Mission–Foothill next.", time: "10:26", reactions: 4 },
+  { id: "m3", channel: "dispatch", author: "Naviwork Assist", initials: "NW", role: "Operations brief", body: "Route check: assigning D-2048 to RS protects both SLA windows and adds 3.1 miles.", time: "10:27", reactions: 2 },
+  { id: "m4", channel: "field", author: "Dae Kim", initials: "DK", role: "Van 09", body: "Southgate install is running on plan. Parts count is confirmed and customer access is clear.", time: "10:18", reactions: 2 },
+  { id: "m5", channel: "field", author: "Jules Martinez", initials: "JM", role: "Van 14", body: "Finishing early in Mission–Foothill. Available for the next nearby job after cleanup.", time: "10:21", reactions: 5 },
+  { id: "m6", channel: "maintenance", author: "Alex Brown", initials: "AB", role: "Truck 11", body: "Truck 11 inverter alert cleared after restart. Logging it for end-of-shift inspection.", time: "09:54", reactions: 1 },
+  { id: "m7", channel: "leadership", author: "Morgan Grant", initials: "MG", role: "Operations lead", body: "Morning brief: on-time performance is 92%, with two recoverable route gaps before noon.", time: "09:05", reactions: 6, pinned: true },
+  { id: "m8", channel: "rina", author: "Rina Singh", initials: "RS", role: "Truck 07", body: "Ready when you are. Send the updated gate code with the assignment.", time: "10:29", reactions: 1 },
+  { id: "m9", channel: "jules", author: "Jules Martinez", initials: "JM", role: "Van 14", body: "I have the recovery kit onboard if Dae needs it after Southgate.", time: "10:12", reactions: 1 },
+];
+
 const viewTitles: Record<View, { eyebrow: string; title: string; copy: string }> = {
   COMMAND: { eyebrow: "TAPE 01 · SATURDAY OCT 17", title: "Good morning, Morgan.", copy: "Your Hayward field operation is on pace. Two openings can still become revenue." },
   MAP: { eyebrow: "DISPATCH CHANNEL 01 · HAYWARD CA", title: "Live dispatch control", copy: "See the field, triage new work, and move the right unit with confidence." },
+  COMMS: { eyebrow: "TEAM RADIO · ALL SYSTEMS ONLINE", title: "Team communications", copy: "Keep every conversation attached to the work, the route, and the people who need it." },
   GAPS: { eyebrow: "OPPORTUNITY SCAN", title: "Route gaps", copy: "Review suggested work before anything reaches a customer." },
   REVENUE: { eyebrow: "MONEY FEED", title: "Revenue & collections", copy: "Track today’s value and turn outstanding work into collected revenue." },
   CREWS: { eyebrow: "FIELD CHANNEL", title: "Crews", copy: "See who is moving, who is free, and what each team needs next." },
@@ -170,6 +190,13 @@ export default function Home() {
   const [selectedDispatchId, setSelectedDispatchId] = useState("D-2048");
   const [assignedDispatches, setAssignedDispatches] = useState<string[]>([]);
   const [createdDispatch, setCreatedDispatch] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState<ChannelId>("dispatch");
+  const [teamMessages, setTeamMessages] = useState<TeamMessage[]>(initialTeamMessages);
+  const [teamDraft, setTeamDraft] = useState("");
+  const [messageUrgent, setMessageUrgent] = useState(false);
+  const [huddleActive, setHuddleActive] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const selectedCrew = crews.find((crew) => crew.id === selectedCrewId) ?? crews[0];
   const selectedInvoice = invoices.find((invoice) => invoice.id === selectedInvoiceId) ?? invoices[0];
@@ -188,9 +215,13 @@ export default function Home() {
     fetch("/api/state")
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
+        if (data?.user) setCurrentUser(data.user);
         if (data?.state?.settings) {
           setSettings((current) => ({ ...current, ...data.state.settings }));
           setSaveState("saved");
+        }
+        if (Array.isArray(data?.state?.comms?.messages)) {
+          setTeamMessages(data.state.comms.messages);
         }
       })
       .catch(() => undefined);
@@ -228,16 +259,44 @@ export default function Home() {
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
+  const playCue = useCallback((cue: SoundCue) => {
+    if (!settings.sound || typeof window === "undefined") return;
+    const AudioContextClass = window.AudioContext;
+    if (!AudioContextClass) return;
+    const context = audioContextRef.current ?? new AudioContextClass();
+    audioContextRef.current = context;
+    const tones: Record<SoundCue, Array<[number, number, number]>> = {
+      confirm: [[520, 0, 0.06], [720, 0.07, 0.08]],
+      radio: [[860, 0, 0.025], [1120, 0.04, 0.035]],
+      alert: [[390, 0, 0.09], [390, 0.13, 0.09]],
+      sync: [[460, 0, 0.045], [580, 0.05, 0.045], [700, 0.1, 0.07]],
+    };
+    const start = context.currentTime;
+    tones[cue].forEach(([frequency, delay, duration]) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = cue === "alert" ? "square" : "sine";
+      oscillator.frequency.setValueAtTime(frequency, start + delay);
+      gain.gain.setValueAtTime(0.0001, start + delay);
+      gain.gain.exponentialRampToValueAtTime(0.035, start + delay + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + delay + duration);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(start + delay);
+      oscillator.stop(start + delay + duration + 0.01);
+    });
+  }, [settings.sound]);
+
   const saveWorkspace = async () => {
     setSaveState("saving");
     try {
       const response = await fetch("/api/state", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ settings }),
+        body: JSON.stringify({ settings, comms: { messages: teamMessages } }),
       });
       if (!response.ok) throw new Error("local preview");
       setSaveState("saved");
+      playCue("confirm");
       showNotice("Workspace settings saved to your account.");
     } catch {
       setSaveState("local");
@@ -259,6 +318,7 @@ export default function Home() {
     setSyncing(true);
     window.setTimeout(() => {
       setSyncing(false);
+      playCue("sync");
       showNotice("Routes, invoices, and calendars are up to date.");
     }, 900);
   };
@@ -285,6 +345,53 @@ export default function Home() {
     showNotice(`Payment reminder sent to ${selectedInvoice.customer}.`);
   };
 
+  const persistTeamMessages = useCallback((next: TeamMessage[]) => {
+    setTeamMessages(next);
+    setSaveState("saving");
+    fetch("/api/state", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ settings, comms: { messages: next } }),
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("local preview");
+        setSaveState("saved");
+      })
+      .catch(() => setSaveState("local"));
+  }, [settings]);
+
+  const sendTeamMessage = (body = teamDraft, urgent = messageUrgent) => {
+    const cleanBody = body.trim();
+    if (!cleanBody) return;
+    const now = new Date();
+    const nextMessage: TeamMessage = {
+      id: `m-${now.getTime()}`,
+      channel: selectedChannel,
+      author: "Morgan Grant",
+      initials: "MG",
+      role: "Dispatcher",
+      body: cleanBody,
+      time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      urgent,
+      reactions: 0,
+    };
+    persistTeamMessages([...teamMessages, nextMessage]);
+    setTeamDraft("");
+    setMessageUrgent(false);
+    playCue(urgent ? "alert" : "radio");
+    showNotice(`Posted to ${channelNames[selectedChannel]}.`);
+  };
+
+  const reactToMessage = (id: string) => {
+    persistTeamMessages(teamMessages.map((item) => item.id === id ? { ...item, reactions: item.reactions + 1 } : item));
+  };
+
+  const pinMessage = (id: string) => {
+    const target = teamMessages.find((item) => item.id === id);
+    persistTeamMessages(teamMessages.map((item) => item.id === id ? { ...item, pinned: !item.pinned } : item));
+    showNotice(target?.pinned ? "Message unpinned." : "Message pinned for the team.");
+  };
+
   const pageTitle = viewTitles[active];
 
   return (
@@ -303,9 +410,10 @@ export default function Home() {
         </button>
         <div className="top-actions">
           <button type="button" className="search-button" onClick={() => setCommandOpen(true)}><span>Jump to…</span><kbd>⌘ K</kbd></button>
-          <button type="button" className={alertsOpen ? "icon-button active" : "icon-button"} onClick={() => setAlertsOpen((open) => !open)} aria-label="Open activity alerts"><span>3</span>⌁</button>
+          <button type="button" className={alertsOpen ? "icon-button active" : "icon-button"} onClick={() => { setAlertsOpen((open) => !open); if (!alertsOpen) playCue("alert"); }} aria-label="Open activity alerts"><span>3</span>⌁</button>
+          <button type="button" className={settings.sound ? "icon-button sound-active" : "icon-button"} onClick={() => { updateSettings("sound", !settings.sound); if (!settings.sound) window.setTimeout(() => playCue("confirm"), 0); }} aria-label={settings.sound ? "Mute interface sounds" : "Enable interface sounds"}>{settings.sound ? "♪" : "♩"}</button>
           <button type="button" className="icon-button" onClick={() => setCustomizerOpen(true)} aria-label="Customize appearance">◐</button>
-          <button type="button" className="profile-button" onClick={() => goTo("SETTINGS")} aria-label="Open settings">MG</button>
+          <button type="button" className="profile-button" onClick={() => setModal("account")} aria-label="Open account">{currentUser ? currentUser.displayName.split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() : "IN"}</button>
         </div>
       </header>
 
@@ -323,11 +431,12 @@ export default function Home() {
         </div>
       </aside>
 
-      <section className={`workspace ${active === "MAP" ? "dispatch-workspace" : ""}`}>
+      <section className={`workspace ${active === "MAP" ? "dispatch-workspace" : active === "COMMS" ? "comms-workspace" : ""}`}>
         <div className="page-heading">
           <div><span>{pageTitle.eyebrow}</span><h1>{pageTitle.title}</h1><p>{pageTitle.copy}</p></div>
           <div className="heading-actions">
             {active === "MAP" && <><button type="button" className="secondary-button" onClick={() => { setRecenterKey((key) => key + 1); showNotice("Map recentered on Hayward."); }}>⌖ Recenter</button><button type="button" className="primary-button" onClick={() => { setMapLayer("GAPS"); goTo("GAPS"); }}>Review openings</button></>}
+            {active === "COMMS" && <><button type="button" className="secondary-button" onClick={() => { setSelectedChannel("dispatch"); setTeamDraft("All teams — "); }}>Broadcast update</button><button type="button" className={huddleActive ? "primary-button huddle-live" : "primary-button"} onClick={() => { setHuddleActive((current) => !current); playCue("radio"); showNotice(huddleActive ? "Dispatch huddle ended." : "Dispatch huddle is live."); }}>{huddleActive ? "● End huddle" : "◉ Start huddle"}</button></>}
             {active === "COMMAND" && <><button type="button" className="secondary-button" onClick={() => goTo("MAP")}>Open map</button><button type="button" className="primary-button" onClick={() => goTo("GAPS")}>Review 2 openings</button></>}
             {active === "REVENUE" && <button type="button" className="primary-button" onClick={() => { setSettingsTab("CONNECTIONS"); goTo("SETTINGS"); }}>Payment settings</button>}
             {active === "CREWS" && <button type="button" className="primary-button" onClick={() => { setSettingsTab("FIELD OPS"); goTo("SETTINGS"); }}>Edit crew rules</button>}
@@ -352,12 +461,13 @@ export default function Home() {
               selectedDispatchId={selectedDispatchId}
               selectDispatch={(id, crewId) => { setSelectedDispatchId(id); setSelectedCrewId(crewId); setMapLayer("JOBS"); }}
               assignedDispatches={assignedDispatches}
-              assignDispatch={(id) => { setAssignedDispatches((current) => current.includes(id) ? current : [...current, id]); showNotice(`${id} assigned to ${selectedCrew.name}.`); }}
+              assignDispatch={(id) => { setAssignedDispatches((current) => current.includes(id) ? current : [...current, id]); playCue("confirm"); showNotice(`${id} assigned to ${selectedCrew.name}.`); }}
               createdDispatch={createdDispatch}
-              createDispatch={() => { setCreatedDispatch(true); setSelectedDispatchId("D-2049"); setMapLayer("JOBS"); showNotice("New dispatch D-2049 added to the board."); }}
+              createDispatch={() => { setCreatedDispatch(true); setSelectedDispatchId("D-2049"); setMapLayer("JOBS"); playCue("radio"); showNotice("New dispatch D-2049 added to the board."); }}
               openMessage={() => setModal("message")}
             />
           )}
+          {active === "COMMS" && <TeamCommsView messages={teamMessages} channel={selectedChannel} setChannel={setSelectedChannel} draft={teamDraft} setDraft={setTeamDraft} urgent={messageUrgent} toggleUrgent={() => setMessageUrgent((current) => !current)} huddleActive={huddleActive} toggleHuddle={() => { setHuddleActive((current) => !current); playCue("radio"); }} sendMessage={sendTeamMessage} reactToMessage={reactToMessage} pinMessage={pinMessage} attachRoute={() => setTeamDraft((current) => `${current}${current ? "\n" : ""}Route snapshot attached · D-2048 · Mission–Foothill`)} addVoiceNote={() => sendTeamMessage("Voice note · 0:18 — Route handoff and access notes recorded.")} createHandoff={() => sendTeamMessage("SHIFT HANDOFF · 10:32 — D-2048 awaiting final assignment. Four units online; Rina has the fastest qualified response. Two recoverable route gaps remain before noon.", true)} goTo={goTo} />}
           {active === "GAPS" && (
             <GapsView
               selectedCustomer={selectedCustomer}
@@ -376,7 +486,7 @@ export default function Home() {
       </section>
 
       <nav className="mobile-nav" aria-label="Mobile navigation">
-        {navItems.slice(0, 5).map((item) => <button type="button" key={item.id} className={active === item.id ? "active" : ""} onClick={() => goTo(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}
+        {navItems.filter((item) => (["MAP", "COMMS", "CREWS", "GAPS", "SETTINGS"] as View[]).includes(item.id)).map((item) => <button type="button" key={item.id} className={active === item.id ? "active" : ""} onClick={() => goTo(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}
       </nav>
 
       {alertsOpen && <AlertsPanel close={() => setAlertsOpen(false)} goTo={goTo} />}
@@ -386,6 +496,7 @@ export default function Home() {
       {modal === "invoice" && <InvoiceModal invoice={selectedInvoice} close={() => setModal(null)} sendReminder={sendReminder} markPaid={() => { setInvoices((current) => current.map((invoice) => invoice.id === selectedInvoice.id ? { ...invoice, state: "Paid" } : invoice)); setModal(null); showNotice(`Invoice #${selectedInvoice.id} marked paid.`); }} />}
       {modal === "crew" && <CrewModal crew={selectedCrew} close={() => setModal(null)} openMap={() => { setModal(null); goTo("MAP"); }} message={() => { setModal("message"); }} />}
       {modal === "message" && <MessageModal crew={selectedCrew} value={crewMessage} setValue={setCrewMessage} close={() => setModal(null)} send={() => { setCrewMessage(""); setModal(null); showNotice(`Message sent to ${selectedCrew.name}.`); }} />}
+      {modal === "account" && <AccountModal user={currentUser} settings={settings} saveState={saveState} close={() => setModal(null)} openSettings={() => { setModal(null); goTo("SETTINGS"); }} />}
       {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
     </main>
   );
@@ -584,6 +695,95 @@ function CrewsView({ selectedCrewId, selectCrew, openCrew, goTo, openMessage }: 
   );
 }
 
+const channelNames: Record<ChannelId, string> = {
+  dispatch: "Dispatch room",
+  field: "Field team",
+  maintenance: "Fleet & maintenance",
+  leadership: "Leadership",
+  rina: "Rina Singh",
+  jules: "Jules Martinez",
+};
+
+const channelMeta: Array<{ id: ChannelId; label: string; detail: string; icon: string; unread?: number; direct?: boolean }> = [
+  { id: "dispatch", label: "Dispatch room", detail: "9 members", icon: "#", unread: 2 },
+  { id: "field", label: "Field team", detail: "4 active crews", icon: "#", unread: 1 },
+  { id: "maintenance", label: "Fleet & maintenance", detail: "Vehicles + parts", icon: "#" },
+  { id: "leadership", label: "Leadership", detail: "Private channel", icon: "⌁" },
+  { id: "rina", label: "Rina Singh", detail: "Truck 07 · online", icon: "RS", direct: true },
+  { id: "jules", label: "Jules Martinez", detail: "Van 14 · online", icon: "JM", direct: true },
+];
+
+function TeamCommsView({ messages, channel, setChannel, draft, setDraft, urgent, toggleUrgent, huddleActive, toggleHuddle, sendMessage, reactToMessage, pinMessage, attachRoute, addVoiceNote, createHandoff, goTo }: {
+  messages: TeamMessage[];
+  channel: ChannelId;
+  setChannel: (channel: ChannelId) => void;
+  draft: string;
+  setDraft: (value: string) => void;
+  urgent: boolean;
+  toggleUrgent: () => void;
+  huddleActive: boolean;
+  toggleHuddle: () => void;
+  sendMessage: (body?: string, urgent?: boolean) => void;
+  reactToMessage: (id: string) => void;
+  pinMessage: (id: string) => void;
+  attachRoute: () => void;
+  addVoiceNote: () => void;
+  createHandoff: () => void;
+  goTo: (view: View) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const activeChannel = channelMeta.find((item) => item.id === channel) ?? channelMeta[0];
+  const visibleMessages = messages.filter((item) => item.channel === channel && `${item.author} ${item.body}`.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="comms-layout">
+      <aside className="camera-panel comms-rail">
+        <PanelHeader label="TEAM RADIO" detail="4/4 ONLINE" />
+        <label className="channel-search"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search this channel" aria-label="Search current channel" /></label>
+        <p className="rail-label">CHANNELS</p>
+        <div className="channel-list">
+          {channelMeta.filter((item) => !item.direct).map((item) => <button type="button" key={item.id} className={channel === item.id ? "active" : ""} onClick={() => setChannel(item.id)}><i>{item.icon}</i><span><b>{item.label}</b><small>{item.detail}</small></span>{item.unread && <em>{item.unread}</em>}</button>)}
+        </div>
+        <p className="rail-label direct-label">DIRECT</p>
+        <div className="channel-list">
+          {channelMeta.filter((item) => item.direct).map((item) => <button type="button" key={item.id} className={channel === item.id ? "active" : ""} onClick={() => setChannel(item.id)}><i className="direct-avatar">{item.icon}</i><span><b>{item.label}</b><small><mark />{item.detail}</small></span></button>)}
+        </div>
+        <button type="button" className="new-channel-button" onClick={() => { setChannel("dispatch"); setDraft("New channel request: "); }}>＋ Request a channel</button>
+      </aside>
+
+      <section className="camera-panel conversation-panel">
+        <header className="conversation-head">
+          <div><span>{activeChannel.icon}</span><div><h2>{activeChannel.label}</h2><p>{activeChannel.detail} · messages sync with dispatch</p></div></div>
+          <button type="button" className={huddleActive ? "huddle-button live" : "huddle-button"} onClick={toggleHuddle}>{huddleActive ? "● Huddle live" : "◉ Join huddle"}</button>
+        </header>
+        {huddleActive && <div className="live-huddle"><span className="audio-bars"><i /><i /><i /><i /></span><b>Dispatch huddle in progress</b><small>Morgan, Rina, and Dae are connected</small><button type="button" onClick={toggleHuddle}>Leave</button></div>}
+        <div className="message-stream" aria-live="polite">
+          {visibleMessages.length === 0 && <div className="empty-messages"><b>No messages match</b><span>Clear the search or start the conversation.</span><button type="button" onClick={() => setSearch("")}>Clear search</button></div>}
+          {visibleMessages.map((item) => <article className={`team-message ${item.urgent ? "urgent" : ""}`} key={item.id}>
+            <div className={`message-avatar ${item.author.includes("Assist") ? "assist" : ""}`}>{item.initials}</div>
+            <div className="message-copy">
+              <header><b>{item.author}</b><span>{item.role}</span><time>{item.time}</time>{item.pinned && <em>PINNED</em>}</header>
+              <p>{item.body}</p>
+              <footer><button type="button" onClick={() => reactToMessage(item.id)} aria-label={`React to ${item.author}'s message`}>♥ {item.reactions}</button><button type="button" onClick={() => pinMessage(item.id)}>{item.pinned ? "Unpin" : "Pin"}</button>{item.urgent && <span>Priority broadcast</span>}</footer>
+            </div>
+          </article>)}
+        </div>
+        <div className={`message-composer ${urgent ? "urgent" : ""}`}>
+          {urgent && <div className="urgent-banner"><b>Priority broadcast</b><span>Everyone in this channel will be alerted.</span></div>}
+          <textarea value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === "Enter") sendMessage(); }} placeholder={`Message ${activeChannel.label}…`} aria-label={`Message ${activeChannel.label}`} />
+          <div className="composer-actions"><div><button type="button" onClick={attachRoute} title="Attach active route">⌖ <span>Route</span></button><button type="button" className={urgent ? "active" : ""} onClick={toggleUrgent} title="Toggle priority">! <span>Priority</span></button><button type="button" onClick={addVoiceNote} title="Add voice note">◖ <span>Voice</span></button></div><span>⌘ Enter to send</span><button type="button" className="send-button" onClick={() => sendMessage()} disabled={!draft.trim()}>Send ↗</button></div>
+        </div>
+      </section>
+
+      <aside className="comms-context">
+        <section className="camera-panel linked-operation"><PanelHeader label="LINKED OPERATION" detail="P1" /><span className="operation-id">D-2048</span><h3>Mission–Foothill response</h3><p>Rina is 3.1 miles away and holding for final assignment.</p><div><span><i /> SLA protected</span><b>9 min</b></div><button type="button" className="primary-button" onClick={() => goTo("MAP")}>Open on live map</button></section>
+        <section className="camera-panel presence-card"><PanelHeader label="TEAM PRESENCE" detail="LIVE" />{crews.map((crew) => <button type="button" key={crew.id} onClick={() => setChannel(crew.id === "RS" ? "rina" : crew.id === "JM" ? "jules" : "field")}><i>{crew.id}</i><span><b>{crew.name}</b><small>{crew.status}</small></span><em>●</em></button>)}</section>
+        <section className="camera-panel handoff-card"><PanelHeader label="SMART HANDOFF" detail="READY" /><div className="handoff-tape"><span>Auto brief</span><b>3 decisions</b><small>Jobs, crew state, and open exceptions are summarized for the next shift.</small></div><button type="button" className="secondary-button" onClick={createHandoff}>Post shift handoff</button></section>
+      </aside>
+    </div>
+  );
+}
+
 function SettingsView({ tab, setTab, settings, updateSettings, toggleIntegration, openCustomizer }: { tab: SettingsTab; setTab: (tab: SettingsTab) => void; settings: AppSettings; updateSettings: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void; toggleIntegration: (key: IntegrationKey) => void; openCustomizer: () => void }) {
   return (
     <div className="settings-layout camera-panel">
@@ -622,7 +822,7 @@ function AlertsPanel({ close, goTo }: { close: () => void; goTo: (view: View) =>
 }
 
 function Customizer({ settings, updateSettings, close }: { settings: AppSettings; updateSettings: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void; close: () => void }) {
-  return <div className="drawer-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close customizer" /><aside className="customizer"><header><div><span>VIEWFINDER SETUP</span><h2>Make it yours</h2></div><button type="button" onClick={close} aria-label="Close customizer">×</button></header><section><p className="section-label">COLOR MODE</p><div className="theme-options">{(["silver", "daylight", "night"] as Theme[]).map((theme) => <button type="button" className={settings.theme === theme ? "active" : ""} onClick={() => updateSettings("theme", theme)} key={theme}><i className={theme} /><span><b>{theme === "silver" ? "Silver tape" : theme === "daylight" ? "Daylight" : "Night shot"}</b><small>{theme === "silver" ? "Classic camcorder" : theme === "daylight" ? "Bright & airy" : "Low-light console"}</small></span></button>)}</div></section><section><p className="section-label">LAYOUT</p><ToggleRow label="Compact controls" copy="Fit more information on screen." value={settings.compact} toggle={() => updateSettings("compact", !settings.compact)} /><ToggleRow label="Interface motion" copy="Animate view changes and live signals." value={settings.motion} toggle={() => updateSettings("motion", !settings.motion)} /></section><footer><button type="button" className="primary-button" onClick={close}>Done</button></footer></aside></div>;
+  return <div className="drawer-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close customizer" /><aside className="customizer"><header><div><span>VIEWFINDER SETUP</span><h2>Make it yours</h2></div><button type="button" onClick={close} aria-label="Close customizer">×</button></header><section><p className="section-label">COLOR MODE</p><div className="theme-options">{(["silver", "daylight", "night"] as Theme[]).map((theme) => <button type="button" className={settings.theme === theme ? "active" : ""} onClick={() => updateSettings("theme", theme)} key={theme}><i className={theme} /><span><b>{theme === "silver" ? "Silver tape" : theme === "daylight" ? "Daylight" : "Night shot"}</b><small>{theme === "silver" ? "Classic camcorder" : theme === "daylight" ? "Bright & airy" : "Low-light console"}</small></span></button>)}</div></section><section><p className="section-label">LAYOUT & FEEDBACK</p><ToggleRow label="Compact controls" copy="Fit more information on screen." value={settings.compact} toggle={() => updateSettings("compact", !settings.compact)} /><ToggleRow label="Interface motion" copy="Animate view changes and live signals." value={settings.motion} toggle={() => updateSettings("motion", !settings.motion)} /><ToggleRow label="Interface sounds" copy="Use subtle cues for dispatch, radio, alerts, and sync." value={settings.sound} toggle={() => updateSettings("sound", !settings.sound)} /></section><footer><button type="button" className="primary-button" onClick={close}>Done</button></footer></aside></div>;
 }
 
 function CommandPalette({ goTo, close, syncNow, openCustomizer }: { goTo: (view: View) => void; close: () => void; syncNow: () => void; openCustomizer: () => void }) {
@@ -645,6 +845,10 @@ function CrewModal({ crew, close, openMap, message }: { crew: Crew; close: () =>
 
 function MessageModal({ crew, value, setValue, close, send }: { crew: Crew; value: string; setValue: (value: string) => void; close: () => void; send: () => void }) {
   return <ModalShell eyebrow="CREW CHANNEL" title={`Message ${crew.name}`} close={close}><label className="field"><span>Message</span><textarea rows={5} value={value} onChange={(event) => setValue(event.target.value)} placeholder="Share an update with the crew…" /></label><p>This demo keeps messages inside the dispatch activity feed.</p><div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Cancel</button><button type="button" className="primary-button" onClick={send} disabled={!value.trim()}>Send message</button></div></ModalShell>;
+}
+
+function AccountModal({ user, settings, saveState, close, openSettings }: { user: CurrentUser | null; settings: AppSettings; saveState: "saved" | "saving" | "local"; close: () => void; openSettings: () => void }) {
+  return <ModalShell eyebrow="NAVIWORK ACCOUNT" title={user ? "Account & workspace" : "Sign in to your workspace"} close={close}>{user ? <><div className="account-identity"><span>{user.displayName.split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><div><b>{user.displayName}</b><small>{user.email}</small></div><em><i /> Signed in</em></div><div className="account-details"><div><span>Workspace</span><b>{settings.businessName}</b></div><div><span>Operations type</span><b>{accountProfiles[settings.accountType].label}</b></div><div><span>Cloud state</span><b>{saveState === "saved" ? "Synced" : saveState === "saving" ? "Syncing…" : "Changes on device"}</b></div></div><p>Your preferences and team communication history are isolated to this account and sync through the Naviwork workspace.</p><div className="modal-actions"><a className="signout-button" href="/signout-with-chatgpt?return_to=%2F">Sign out</a><button type="button" className="primary-button" onClick={openSettings}>Workspace settings</button></div></> : <><div className="signin-panel"><span>◎</span><div><b>One account, one operations workspace</b><p>Sign in with ChatGPT to sync settings, account type, integrations, and team messages across devices.</p></div></div><div className="account-details"><div><span>Current mode</span><b>Local demo</b></div><div><span>Saved data</span><b>This device only</b></div></div><div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Continue demo</button><a className="signin-button" href="/signin-with-chatgpt?return_to=%2F">Sign in with ChatGPT</a></div></>}</ModalShell>;
 }
 
 function ModalShell({ eyebrow, title, close, children }: { eyebrow: string; title: string; close: () => void; children: React.ReactNode }) {
