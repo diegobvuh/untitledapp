@@ -30,11 +30,16 @@ export async function resolveMembership(request: Request) {
   const db = getServiceSupabase();
   const { data, error } = await db
     .from("workspace_memberships")
-    .select("workspace_id, role, status, workspaces(id, name)")
+    .select("workspace_id, role, status")
     .eq("user_id", user.id)
     .eq("status", "active")
     .limit(1)
     .maybeSingle();
   if (error || !data) return null;
-  return { user, workspaceId: data.workspace_id as string, role: data.role as WorkspaceRole, workspaceName: (data.workspaces as { name?: string } | null)?.name ?? "Naviwork workspace" };
+  const { data: workspace } = await db
+    .from("workspaces")
+    .select("name")
+    .eq("id", data.workspace_id)
+    .maybeSingle();
+  return { user, workspaceId: data.workspace_id as string, role: data.role as WorkspaceRole, workspaceName: workspace?.name ?? "Naviwork workspace" };
 }
