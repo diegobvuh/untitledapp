@@ -1,10 +1,10 @@
-import { getServiceSupabase, isSupabaseServerConfigured, resolveMembership } from "../../../lib/supabase/server";
+import { getMemberSupabase, isSupabaseServerConfigured, resolveMembership } from "../../../lib/supabase/server";
 
 export async function GET(request: Request) {
   if (!isSupabaseServerConfigured()) return Response.json({ configured: false, error: "Supabase is not configured." }, { status: 503 });
   const membership = await resolveMembership(request);
   if (!membership) return Response.json({ error: "Sign in and an active workspace membership are required." }, { status: 401 });
-  const db = getServiceSupabase();
+  const db = getMemberSupabase(request);
   const [dispatches, crews, messages, integrations, priorities, workspace] = await Promise.all([
     db.from("dispatches").select("id, code, title, priority, status, neighborhood, eta_minutes, assigned_crew_id, created_at").eq("workspace_id", membership.workspaceId).order("created_at", { ascending: false }).limit(30),
     db.from("crew_activity").select("id, crew_name, vehicle, status, neighborhood, assignment, updated_at").eq("workspace_id", membership.workspaceId).order("updated_at", { ascending: false }).limit(30),
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   const membership = await resolveMembership(request);
   if (!membership) return Response.json({ error: "Authentication required." }, { status: 401 });
   const body = await request.json() as { action?: string; dispatchId?: string; crewId?: string; title?: string; neighborhood?: string };
-  const db = getServiceSupabase();
+  const db = getMemberSupabase(request);
   if (body.action === "assign" && body.dispatchId && body.crewId) {
     const { error } = await db.from("dispatches").update({ assigned_crew_id: body.crewId, status: "assigned", updated_at: new Date().toISOString() }).eq("workspace_id", membership.workspaceId).eq("id", body.dispatchId);
     if (error) return Response.json({ error: error.message }, { status: 400 });

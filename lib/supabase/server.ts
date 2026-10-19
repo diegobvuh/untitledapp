@@ -22,6 +22,15 @@ export async function authenticatedUser(request: Request): Promise<User | null> 
   return error ? null : data.user;
 }
 
+export function getMemberSupabase(request: Request) {
+  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (!token || !url || !anonKey) throw new Error("An authenticated Supabase session is required.");
+  return createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+}
+
 export type WorkspaceRole = "owner" | "dispatcher";
 
 export async function resolveMembership(request: Request) {
@@ -32,10 +41,7 @@ export async function resolveMembership(request: Request) {
   // This lookup intentionally uses the member's token. It proves that the
   // workspace RLS policy grants this signed-in user access before any
   // privileged server-side work is attempted.
-  const db = createClient(url, anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
+  const db = getMemberSupabase(request);
   const { data, error } = await db
     .from("workspace_memberships")
     .select("workspace_id, role, status")
