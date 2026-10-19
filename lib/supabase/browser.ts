@@ -29,7 +29,7 @@ export function getSupabaseBrowser() {
   const { url, anonKey } = getConfig();
   if (!url || !anonKey) return null;
   client ??= createClient(url, anonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: "implicit" },
   });
   return client;
 }
