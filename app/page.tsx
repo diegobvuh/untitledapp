@@ -3,15 +3,17 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapboxgl from "mapbox-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getSupabaseBrowser, isSupabaseConfigured } from "../lib/supabase/browser";
 
 type View = "COMMAND" | "MAP" | "COMMS" | "GAPS" | "REVENUE" | "CREWS" | "SETTINGS";
 type MapLayer = "CREWS" | "JOBS" | "GAPS";
 type SettingsTab = "PROFILE" | "FIELD OPS" | "OUTREACH" | "CONNECTIONS";
 type Theme = "silver" | "daylight" | "night";
 type AccountType = "field_service" | "last_mile" | "freight" | "public_works";
-type Modal = "outreach" | "invoice" | "crew" | "message" | "account" | null;
+type Modal = "outreach" | "invoice" | "crew" | "message" | "account" | "dispatch" | null;
 type SoundCue = "confirm" | "radio" | "alert" | "sync";
 type CurrentUser = { email: string; displayName: string };
+type WorkspaceRole = "owner" | "dispatcher";
 
 type Crew = {
   id: string;
@@ -196,10 +198,16 @@ export default function Home() {
   const [messageUrgent, setMessageUrgent] = useState(false);
   const [huddleActive, setHuddleActive] = useState(false);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [workspaceRole, setWorkspaceRole] = useState<WorkspaceRole>("owner");
+  const [workspaceName, setWorkspaceName] = useState("Bay Breeze Mechanical");
+  const [authState, setAuthState] = useState<"loading" | "signed_out" | "ready" | "membership_required" | "setup_required">(() => isSupabaseConfigured ? "loading" : "setup_required");
+  const [dispatchTitle, setDispatchTitle] = useState("");
+  const [dispatchNeighborhood, setDispatchNeighborhood] = useState("Hayward");
   const audioContextRef = useRef<AudioContext | null>(null);
 
   const selectedCrew = crews.find((crew) => crew.id === selectedCrewId) ?? crews[0];
   const selectedInvoice = invoices.find((invoice) => invoice.id === selectedInvoiceId) ?? invoices[0];
+  const permittedNav = useMemo(() => navItems.filter((item) => (workspaceRole === "owner" ? ["COMMAND", "REVENUE", "MAP", "SETTINGS"] : ["MAP", "CREWS", "GAPS", "COMMS", "SETTINGS"]).includes(item.id)), [workspaceRole]);
 
   const showNotice = useCallback((text: string) => {
     setNotice(text);
@@ -212,19 +220,26 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/state")
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => {
-        if (data?.user) setCurrentUser(data.user);
-        if (data?.state?.settings) {
-          setSettings((current) => ({ ...current, ...data.state.settings }));
-          setSaveState("saved");
-        }
-        if (Array.isArray(data?.state?.comms?.messages)) {
-          setTeamMessages(data.state.comms.messages);
-        }
-      })
-      .catch(() => undefined);
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    const loadWorkspace = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setAuthState("signed_out"); return; }
+      const response = await fetch("/api/workspace", { headers: { authorization: `Bearer ${session.access_token}` } });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) { setAuthState(response.status === 401 ? "membership_required" : "signed_out"); return; }
+      setCurrentUser(data.user);
+      setWorkspaceRole(data.membership.role);
+      setWorkspaceName(data.membership.workspaceName);
+      setSettings((current) => ({ ...current, ...data.settings }));
+      setSaveState("saved");
+      if (Array.isArray(data.messages)) setTeamMessages(data.messages.map((item: { id: string; channel: ChannelId; body: string; priority: boolean; created_at: string; profiles?: { full_name?: string; email?: string } | null }) => ({ id: item.id, channel: item.channel, body: item.body, urgent: item.priority, time: new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), author: item.profiles?.full_name ?? item.profiles?.email ?? "Team member", initials: (item.profiles?.full_name ?? item.profiles?.email ?? "TM").split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase(), role: "Team", reactions: 0 })));
+      setAuthState("ready");
+      setActive(data.membership.role === "owner" ? "COMMAND" : "MAP");
+    };
+    void loadWorkspace();
+    const { data: subscription } = supabase.auth.onAuthStateChange(() => { void loadWorkspace(); });
+    return () => subscription.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -259,6 +274,31 @@ export default function Home() {
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
+  const authorizedFetch = useCallback(async (path: string, init: RequestInit = {}) => {
+    const supabase = getSupabaseBrowser();
+    const result = supabase ? await supabase.auth.getSession() : { data: { session: null } };
+    const session = result.data.session;
+    if (!session) throw new Error("Sign in to your Supabase workspace first.");
+    const headers = new Headers(init.headers);
+    headers.set("authorization", `Bearer ${session.access_token}`);
+    if (init.body) headers.set("content-type", "application/json");
+    return fetch(path, { ...init, headers });
+  }, []);
+
+  const signInWithGoogle = async () => {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) { showNotice("Add Supabase browser settings before enabling sign-in."); return; }
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin } });
+    if (error) showNotice(error.message);
+  };
+
+  const sendMagicLink = async (email: string) => {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) { showNotice("Add Supabase browser settings before enabling sign-in."); return; }
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    showNotice(error ? error.message : "Magic link sent. Check your email to continue.");
+  };
+
   const playCue = useCallback((cue: SoundCue) => {
     if (!settings.sound || typeof window === "undefined") return;
     const AudioContextClass = window.AudioContext;
@@ -289,29 +329,29 @@ export default function Home() {
   const saveWorkspace = async () => {
     setSaveState("saving");
     try {
-      const response = await fetch("/api/state", {
+      const response = await authorizedFetch("/api/workspace", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ settings, comms: { messages: teamMessages } }),
+        body: JSON.stringify({ action: "settings", settings }),
       });
-      if (!response.ok) throw new Error("local preview");
+      if (!response.ok) throw new Error("workspace unavailable");
       setSaveState("saved");
       playCue("confirm");
-      showNotice("Workspace settings saved to your account.");
+      showNotice("Workspace settings saved to Supabase.");
     } catch {
       setSaveState("local");
-      showNotice("Saved on this device. Sign in on the published app to sync your workspace.");
+      showNotice("Workspace settings need an owner session and configured Supabase workspace.");
     }
   };
 
   const toggleIntegration = (key: IntegrationKey) => {
-    const next = !settings.integrations[key];
-    setSaveState("local");
-    setSettings((current) => ({
-      ...current,
-      integrations: { ...current.integrations, [key]: next },
-    }));
-    showNotice(`${integrationLabels[key]} ${next ? "connected for this demo" : "disconnected"}.`);
+    const provider = key === "calendar" ? "google_calendar" : key === "quickbooks" ? "quickbooks" : null;
+    if (!provider) { showNotice(key === "mapbox" ? "Mapbox remains optional. Naviwork uses the Hayward fallback map when no token is configured." : "Stripe is not configured for this workspace. Use QuickBooks for owner finance sync."); return; }
+    void authorizedFetch(`/api/integrations/${provider}/connect`, { method: "POST" }).then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Connection could not be started.");
+      window.location.assign(data.authorizationUrl);
+    }).catch((error) => showNotice(error instanceof Error ? error.message : "Connection could not be started."));
   };
 
   const syncNow = () => {
@@ -347,18 +387,7 @@ export default function Home() {
 
   const persistTeamMessages = useCallback((next: TeamMessage[]) => {
     setTeamMessages(next);
-    setSaveState("saving");
-    fetch("/api/state", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ settings, comms: { messages: next } }),
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("local preview");
-        setSaveState("saved");
-      })
-      .catch(() => setSaveState("local"));
-  }, [settings]);
+  }, []);
 
   const sendTeamMessage = (body = teamDraft, urgent = messageUrgent) => {
     const cleanBody = body.trim();
@@ -376,6 +405,10 @@ export default function Home() {
       reactions: 0,
     };
     persistTeamMessages([...teamMessages, nextMessage]);
+    void authorizedFetch("/api/messages", { method: "POST", body: JSON.stringify({ channel: selectedChannel, body: cleanBody, priority: urgent }) }).then((response) => {
+      if (!response.ok) throw new Error("message not saved");
+      setSaveState("saved");
+    }).catch(() => { setSaveState("local"); showNotice("Message is visible here, but was not saved. Sign in to an active workspace to sync it."); });
     setTeamDraft("");
     setMessageUrgent(false);
     playCue(urgent ? "alert" : "radio");
@@ -393,6 +426,16 @@ export default function Home() {
   };
 
   const pageTitle = viewTitles[active];
+
+  const submitDispatch = async () => {
+    if (!dispatchTitle.trim()) return;
+    try {
+      const response = await authorizedFetch("/api/workspace", { method: "POST", body: JSON.stringify({ action: "create", title: dispatchTitle, neighborhood: dispatchNeighborhood }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Dispatch could not be created.");
+      setCreatedDispatch(true); setSelectedDispatchId(data.dispatch.code); setMapLayer("JOBS"); setModal(null); setDispatchTitle(""); playCue("radio"); showNotice(`New dispatch ${data.dispatch.code} created.`);
+    } catch (error) { showNotice(error instanceof Error ? error.message : "Dispatch could not be created."); }
+  };
 
   return (
     <main className={`app-shell theme-${settings.theme} ${settings.compact ? "is-compact" : ""} ${settings.motion ? "" : "reduce-motion"}`}>
@@ -419,7 +462,7 @@ export default function Home() {
 
       <aside className="sidebar">
         <nav aria-label="Primary navigation">
-          {navItems.map((item) => (
+          {permittedNav.map((item) => (
             <button type="button" key={item.id} className={active === item.id ? "active" : ""} onClick={() => goTo(item.id)}>
               <i>{item.icon}</i><span><b>{item.label}</b><small>{item.hint}</small></span>{item.id === "GAPS" && <em>2</em>}
             </button>
@@ -461,9 +504,9 @@ export default function Home() {
               selectedDispatchId={selectedDispatchId}
               selectDispatch={(id, crewId) => { setSelectedDispatchId(id); setSelectedCrewId(crewId); setMapLayer("JOBS"); }}
               assignedDispatches={assignedDispatches}
-              assignDispatch={(id) => { setAssignedDispatches((current) => current.includes(id) ? current : [...current, id]); playCue("confirm"); showNotice(`${id} assigned to ${selectedCrew.name}.`); }}
+              assignDispatch={(id) => { void authorizedFetch("/api/workspace", { method: "POST", body: JSON.stringify({ action: "assign", dispatchId: id, crewId: selectedCrew.id }) }).then(async (response) => { const data = await response.json(); if (!response.ok) throw new Error(data.error); setAssignedDispatches((current) => current.includes(id) ? current : [...current, id]); playCue("confirm"); showNotice(`${id} assigned to ${selectedCrew.name}.`); }).catch((error) => showNotice(error instanceof Error ? error.message : "Assignment could not be saved.")); }}
               createdDispatch={createdDispatch}
-              createDispatch={() => { setCreatedDispatch(true); setSelectedDispatchId("D-2049"); setMapLayer("JOBS"); playCue("radio"); showNotice("New dispatch D-2049 added to the board."); }}
+              createDispatch={() => setModal("dispatch")}
               openMessage={() => setModal("message")}
             />
           )}
@@ -486,17 +529,18 @@ export default function Home() {
       </section>
 
       <nav className="mobile-nav" aria-label="Mobile navigation">
-        {navItems.filter((item) => (["MAP", "COMMS", "CREWS", "GAPS", "SETTINGS"] as View[]).includes(item.id)).map((item) => <button type="button" key={item.id} className={active === item.id ? "active" : ""} onClick={() => goTo(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}
+        {permittedNav.map((item) => <button type="button" key={item.id} className={active === item.id ? "active" : ""} onClick={() => goTo(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}
       </nav>
 
       {alertsOpen && <AlertsPanel close={() => setAlertsOpen(false)} goTo={goTo} />}
       {customizerOpen && <Customizer settings={settings} updateSettings={updateSettings} close={() => setCustomizerOpen(false)} />}
-      {commandOpen && <CommandPalette goTo={goTo} close={() => setCommandOpen(false)} syncNow={syncNow} openCustomizer={() => { setCommandOpen(false); setCustomizerOpen(true); }} />}
+      {commandOpen && <CommandPalette items={permittedNav} goTo={goTo} close={() => setCommandOpen(false)} syncNow={syncNow} openCustomizer={() => { setCommandOpen(false); setCustomizerOpen(true); }} />}
       {modal === "outreach" && <OutreachModal customer={selectedCustomer} message={message} setMessage={setMessage} close={() => setModal(null)} queue={queueOutreach} />}
       {modal === "invoice" && <InvoiceModal invoice={selectedInvoice} close={() => setModal(null)} sendReminder={sendReminder} markPaid={() => { setInvoices((current) => current.map((invoice) => invoice.id === selectedInvoice.id ? { ...invoice, state: "Paid" } : invoice)); setModal(null); showNotice(`Invoice #${selectedInvoice.id} marked paid.`); }} />}
       {modal === "crew" && <CrewModal crew={selectedCrew} close={() => setModal(null)} openMap={() => { setModal(null); goTo("MAP"); }} message={() => { setModal("message"); }} />}
       {modal === "message" && <MessageModal crew={selectedCrew} value={crewMessage} setValue={setCrewMessage} close={() => setModal(null)} send={() => { setCrewMessage(""); setModal(null); showNotice(`Message sent to ${selectedCrew.name}.`); }} />}
-      {modal === "account" && <AccountModal user={currentUser} settings={settings} saveState={saveState} close={() => setModal(null)} openSettings={() => { setModal(null); goTo("SETTINGS"); }} />}
+      {modal === "account" && <AccountModal user={currentUser} settings={settings} saveState={saveState} authState={authState} workspaceName={workspaceName} configured={isSupabaseConfigured} close={() => setModal(null)} openSettings={() => { setModal(null); goTo("SETTINGS"); }} signInWithGoogle={signInWithGoogle} sendMagicLink={sendMagicLink} />}
+      {modal === "dispatch" && <DispatchModal title={dispatchTitle} setTitle={setDispatchTitle} neighborhood={dispatchNeighborhood} setNeighborhood={setDispatchNeighborhood} close={() => setModal(null)} create={submitDispatch} />}
       {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
     </main>
   );
@@ -540,9 +584,11 @@ function Metric({ label, value, detail, action }: { label: string; value: string
 
 function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, setZoom, recenterKey, showNotice, accountType, selectedDispatchId, selectDispatch, assignedDispatches, assignDispatch, createdDispatch, createDispatch, openMessage }: { layer: MapLayer; setLayer: (layer: MapLayer) => void; selectedCrew: Crew; selectCrew: (id: string) => void; openCrew: () => void; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; showNotice: (text: string) => void; accountType: AccountType; selectedDispatchId: string; selectDispatch: (id: string, crewId: string) => void; assignedDispatches: string[]; assignDispatch: (id: string) => void; createdDispatch: boolean; createDispatch: () => void; openMessage: () => void }) {
   const [routeAssist, setRouteAssist] = useState(true);
+  const [queueMode, setQueueMode] = useState<"open" | "assigned">("open");
   const profile = accountProfiles[accountType];
   const feed = createdDispatch ? [...dispatchFeeds[accountType], { id: "D-2049", priority: "NEW", title: "Unassigned dispatch draft", meta: "Hayward · awaiting details", crew: selectedCrew.id }] : dispatchFeeds[accountType];
-  const activeDispatch = feed.find((item) => item.id === selectedDispatchId) ?? feed[0];
+  const visibleFeed = queueMode === "assigned" ? feed.filter((item) => assignedDispatches.includes(item.id)) : feed.filter((item) => !assignedDispatches.includes(item.id));
+  const activeDispatch = feed.find((item) => item.id === selectedDispatchId) ?? visibleFeed[0] ?? feed[0];
   const layerLabels: Record<MapLayer, string> = { CREWS: profile.people, JOBS: profile.work, GAPS: profile.exception };
   return (
     <div className="dispatch-board">
@@ -551,10 +597,10 @@ function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, se
       </section>
 
       <aside className="camera-panel dispatch-queue">
-        <PanelHeader label="INCOMING DISPATCH" detail={`${feed.length} OPEN`} />
-        <div className="queue-tabs"><button type="button" className="active" onClick={() => showNotice("Showing all open dispatches.")}>OPEN</button><button type="button" onClick={() => showNotice(`${assignedDispatches.length} dispatches are assigned.`)}>ASSIGNED</button></div>
+        <PanelHeader label="INCOMING DISPATCH" detail={`${visibleFeed.length} ${queueMode.toUpperCase()}`} />
+        <div className="queue-tabs" role="tablist" aria-label="Dispatch queue filter"><button type="button" role="tab" aria-selected={queueMode === "open"} className={queueMode === "open" ? "active" : ""} onClick={() => setQueueMode("open")}>OPEN</button><button type="button" role="tab" aria-selected={queueMode === "assigned"} className={queueMode === "assigned" ? "active" : ""} onClick={() => setQueueMode("assigned")}>ASSIGNED</button></div>
         <div className="queue-list">
-          {feed.map((item) => <button type="button" key={item.id} className={selectedDispatchId === item.id ? "active" : ""} onClick={() => selectDispatch(item.id, item.crew)}><em className={`priority-${item.priority.toLowerCase()}`}>{item.priority}</em><span><b>{item.title}</b><small>{item.id} · {item.meta}</small></span><i>{assignedDispatches.includes(item.id) ? "✓" : "›"}</i></button>)}
+          {visibleFeed.length ? visibleFeed.map((item) => <button type="button" key={item.id} className={selectedDispatchId === item.id ? "active" : ""} onClick={() => selectDispatch(item.id, item.crew)}><em className={`priority-${item.priority.toLowerCase()}`}>{item.priority}</em><span><b>{item.title}</b><small>{item.id} · {item.meta}</small></span><i>{assignedDispatches.includes(item.id) ? "✓" : "›"}</i></button>) : <p className="queue-empty">No {queueMode} dispatches.</p>}
         </div>
         <button type="button" className="new-dispatch-button" onClick={createDispatch} disabled={createdDispatch}><span>＋</span>{createdDispatch ? "Draft added" : "Create dispatch"}</button>
       </aside>
@@ -792,17 +838,15 @@ function SettingsView({ tab, setTab, settings, updateSettings, toggleIntegration
         {tab === "PROFILE" && <><SettingsHeading title="Business profile" copy="Choose your operation type to adapt dispatch language and workflows across the app." /><div className="field-pair"><label className="field"><span>Business name</span><input value={settings.businessName} onChange={(event) => updateSettings("businessName", event.target.value)} /></label><label className="field"><span>Account type</span><select value={settings.accountType} onChange={(event) => updateSettings("accountType", event.target.value as AccountType)}>{(Object.keys(accountProfiles) as AccountType[]).map((type) => <option key={type} value={type}>{accountProfiles[type].label}</option>)}</select></label></div><div className="account-preview"><span>ACTIVE OPERATIONS PROFILE</span><b>{accountProfiles[settings.accountType].label}</b><small>{accountProfiles[settings.accountType].people} · {accountProfiles[settings.accountType].work} · {accountProfiles[settings.accountType].exception}</small></div><div className="field-pair"><label className="field"><span>Home base</span><input value="Hayward, California" readOnly /></label><label className="field"><span>Operating radius</span><select value={settings.serviceRadius} onChange={(event) => updateSettings("serviceRadius", Number(event.target.value))}><option value={12}>12 miles</option><option value={18}>18 miles</option><option value={25}>25 miles</option></select></label></div><button type="button" className="customize-row" onClick={openCustomizer}><span><i>◐</i><b>Appearance</b><small>{settings.theme} theme · {settings.compact ? "compact" : "comfortable"}</small></span><em>Customize ›</em></button></>}
         {tab === "FIELD OPS" && <><SettingsHeading title="Field operations" copy="Control dispatch behavior and the workday guardrails." /><div className="choice-grid"><button type="button" className={settings.dispatchMode === "Approval first" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Approval first")}><i>✓</i><b>Approval first</b><small>A dispatcher approves route changes.</small></button><button type="button" className={settings.dispatchMode === "Auto-dispatch" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Auto-dispatch")}><i>⚡</i><b>Auto-dispatch</b><small>Qualified gaps can be filled automatically.</small></button></div><div className="field-pair"><label className="field"><span>Day starts</span><input type="time" value={settings.startHour} onChange={(event) => updateSettings("startHour", event.target.value)} /></label><label className="field"><span>Day ends</span><input type="time" value={settings.endHour} onChange={(event) => updateSettings("endHour", event.target.value)} /></label></div><div className="info-note"><i>i</i><span><b>Hayward operating area</b><small>{settings.serviceRadius}-mile service radius centered on Downtown Hayward.</small></span></div></>}
         {tab === "OUTREACH" && <><SettingsHeading title="Customer outreach" copy="Choose how suggested messages are handled." /><ToggleRow label="Enable gap-fill outreach" copy="Show eligible customers when a route opening appears." value={settings.outreachEnabled} toggle={() => updateSettings("outreachEnabled", !settings.outreachEnabled)} /><div className="message-template"><span>EARLIER APPOINTMENT TEMPLATE</span><p>Hi {'{first name}'} — we have an earlier opening today at {'{time}'}. Would you like us to move up your {'{service}'}? Reply YES to accept.</p><small>Variables are filled automatically. Every message remains editable before sending.</small></div></>}
-        {tab === "CONNECTIONS" && <><SettingsHeading title="Connections" copy="Bring schedules, payments, and customer records into one view." /><div className="integration-grid"><IntegrationCard id="mapbox" name="Mapbox" category="Live maps & routing" connected={settings.integrations.mapbox} toggle={() => toggleIntegration("mapbox")} /><IntegrationCard id="calendar" name="Google Calendar" category="Jobs & availability" connected={settings.integrations.calendar} toggle={() => toggleIntegration("calendar")} /><IntegrationCard id="stripe" name="Stripe" category="Payments & deposits" connected={settings.integrations.stripe} toggle={() => toggleIntegration("stripe")} /><IntegrationCard id="quickbooks" name="QuickBooks" category="Invoices & accounting" connected={settings.integrations.quickbooks} toggle={() => toggleIntegration("quickbooks")} /></div><p className="integration-note">Demo connections save their state now. Production OAuth credentials can be added during deployment.</p></>}
+        {tab === "CONNECTIONS" && <><SettingsHeading title="Connections" copy="Owners can securely connect calendars and accounting. Statuses come from the workspace, never from a demo toggle." /><div className="integration-grid"><IntegrationCard id="mapbox" name="Mapbox" category="Optional maps & routing" connected={settings.integrations.mapbox} toggle={() => toggleIntegration("mapbox")} /><IntegrationCard id="calendar" name="Google Calendar" category="Jobs & availability" connected={settings.integrations.calendar} toggle={() => toggleIntegration("calendar")} /><IntegrationCard id="stripe" name="Stripe" category="Not enabled in this workspace" connected={false} toggle={() => toggleIntegration("stripe")} /><IntegrationCard id="quickbooks" name="QuickBooks" category="Invoices & accounting" connected={settings.integrations.quickbooks} toggle={() => toggleIntegration("quickbooks")} /></div><p className="integration-note">OAuth tokens are encrypted server-side. Sync, stale-data, and error states are recorded in the workspace once provider secrets are configured.</p></>}
       </section>
     </div>
   );
 }
 
-const integrationLabels: Record<IntegrationKey, string> = { mapbox: "Mapbox", stripe: "Stripe", quickbooks: "QuickBooks", calendar: "Google Calendar" };
-
 function IntegrationCard({ id, name, category, connected, toggle }: { id: IntegrationKey; name: string; category: string; connected: boolean; toggle: () => void }) {
   const marks: Record<IntegrationKey, string> = { mapbox: "M", stripe: "S", quickbooks: "qb", calendar: "31" };
-  return <article className={connected ? "integration-card connected" : "integration-card"}><div className={`integration-mark ${id}`}>{marks[id]}</div><div><b>{name}</b><small>{category}</small></div><span><i /> {connected ? "Connected" : "Not connected"}</span><button type="button" onClick={toggle}>{connected ? "Disconnect" : "Connect demo"}</button></article>;
+  return <article className={connected ? "integration-card connected" : "integration-card"}><div className={`integration-mark ${id}`}>{marks[id]}</div><div><b>{name}</b><small>{category}</small></div><span><i /> {connected ? "Connected" : "Not connected"}</span><button type="button" onClick={toggle}>{connected ? "View status" : id === "mapbox" || id === "stripe" ? "Learn more" : "Connect"}</button></article>;
 }
 
 function PanelHeader({ label, detail }: { label: string; detail: string }) {
@@ -825,9 +869,9 @@ function Customizer({ settings, updateSettings, close }: { settings: AppSettings
   return <div className="drawer-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close customizer" /><aside className="customizer"><header><div><span>VIEWFINDER SETUP</span><h2>Make it yours</h2></div><button type="button" onClick={close} aria-label="Close customizer">×</button></header><section><p className="section-label">COLOR MODE</p><div className="theme-options">{(["silver", "daylight", "night"] as Theme[]).map((theme) => <button type="button" className={settings.theme === theme ? "active" : ""} onClick={() => updateSettings("theme", theme)} key={theme}><i className={theme} /><span><b>{theme === "silver" ? "Silver tape" : theme === "daylight" ? "Daylight" : "Night shot"}</b><small>{theme === "silver" ? "Classic camcorder" : theme === "daylight" ? "Bright & airy" : "Low-light console"}</small></span></button>)}</div></section><section><p className="section-label">LAYOUT & FEEDBACK</p><ToggleRow label="Compact controls" copy="Fit more information on screen." value={settings.compact} toggle={() => updateSettings("compact", !settings.compact)} /><ToggleRow label="Interface motion" copy="Animate view changes and live signals." value={settings.motion} toggle={() => updateSettings("motion", !settings.motion)} /><ToggleRow label="Interface sounds" copy="Use subtle cues for dispatch, radio, alerts, and sync." value={settings.sound} toggle={() => updateSettings("sound", !settings.sound)} /></section><footer><button type="button" className="primary-button" onClick={close}>Done</button></footer></aside></div>;
 }
 
-function CommandPalette({ goTo, close, syncNow, openCustomizer }: { goTo: (view: View) => void; close: () => void; syncNow: () => void; openCustomizer: () => void }) {
+function CommandPalette({ items, goTo, close, syncNow, openCustomizer }: { items: Array<{ id: View; label: string; icon: string; hint: string }>; goTo: (view: View) => void; close: () => void; syncNow: () => void; openCustomizer: () => void }) {
   const [query, setQuery] = useState("");
-  const options = useMemo(() => navItems.filter((item) => `${item.label} ${item.hint}`.toLowerCase().includes(query.toLowerCase())), [query]);
+  const options = useMemo(() => items.filter((item) => `${item.label} ${item.hint}`.toLowerCase().includes(query.toLowerCase())), [items, query]);
   return <div className="modal-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close command menu" /><section className="command-palette"><header><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search views and actions…" aria-label="Search views and actions" /><kbd>ESC</kbd></header><div>{options.map((item) => <button type="button" key={item.id} onClick={() => goTo(item.id)}><i>{item.icon}</i><span><b>{item.label}</b><small>{item.hint}</small></span><em>↵</em></button>)}{query.length === 0 && <><button type="button" onClick={() => { syncNow(); close(); }}><i>↻</i><span><b>Sync workspace</b><small>Refresh calendars, payments, and routes</small></span><em>↵</em></button><button type="button" onClick={openCustomizer}><i>◐</i><span><b>Customize appearance</b><small>Theme, density, and motion</small></span><em>↵</em></button></>}</div></section></div>;
 }
 
@@ -847,10 +891,33 @@ function MessageModal({ crew, value, setValue, close, send }: { crew: Crew; valu
   return <ModalShell eyebrow="CREW CHANNEL" title={`Message ${crew.name}`} close={close}><label className="field"><span>Message</span><textarea rows={5} value={value} onChange={(event) => setValue(event.target.value)} placeholder="Share an update with the crew…" /></label><p>This demo keeps messages inside the dispatch activity feed.</p><div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Cancel</button><button type="button" className="primary-button" onClick={send} disabled={!value.trim()}>Send message</button></div></ModalShell>;
 }
 
-function AccountModal({ user, settings, saveState, close, openSettings }: { user: CurrentUser | null; settings: AppSettings; saveState: "saved" | "saving" | "local"; close: () => void; openSettings: () => void }) {
-  return <ModalShell eyebrow="NAVIWORK ACCOUNT" title={user ? "Account & workspace" : "Sign in to your workspace"} close={close}>{user ? <><div className="account-identity"><span>{user.displayName.split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><div><b>{user.displayName}</b><small>{user.email}</small></div><em><i /> Signed in</em></div><div className="account-details"><div><span>Workspace</span><b>{settings.businessName}</b></div><div><span>Operations type</span><b>{accountProfiles[settings.accountType].label}</b></div><div><span>Cloud state</span><b>{saveState === "saved" ? "Synced" : saveState === "saving" ? "Syncing…" : "Changes on device"}</b></div></div><p>Your preferences and team communication history are isolated to this account and sync through the Naviwork workspace.</p><div className="modal-actions"><a className="signout-button" href="/signout-with-chatgpt?return_to=%2F">Sign out</a><button type="button" className="primary-button" onClick={openSettings}>Workspace settings</button></div></> : <><div className="signin-panel"><span>◎</span><div><b>One account, one operations workspace</b><p>Sign in with ChatGPT to sync settings, account type, integrations, and team messages across devices.</p></div></div><div className="account-details"><div><span>Current mode</span><b>Local demo</b></div><div><span>Saved data</span><b>This device only</b></div></div><div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Continue demo</button><a className="signin-button" href="/signin-with-chatgpt?return_to=%2F">Sign in with ChatGPT</a></div></>}</ModalShell>;
+function AccountModal({ user, settings, saveState, authState, workspaceName, configured, close, openSettings, signInWithGoogle, sendMagicLink }: { user: CurrentUser | null; settings: AppSettings; saveState: "saved" | "saving" | "local"; authState: string; workspaceName: string; configured: boolean; close: () => void; openSettings: () => void; signInWithGoogle: () => void; sendMagicLink: (email: string) => void }) {
+  const [email, setEmail] = useState("");
+  return <ModalShell eyebrow="NAVIWORK ACCOUNT" title={user ? "Account & workspace" : "Sign in to your workspace"} close={close}>{user ? <><div className="account-identity"><span>{user.displayName.split(/\s|@/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><div><b>{user.displayName}</b><small>{user.email}</small></div><em><i /> Signed in</em></div><div className="account-details"><div><span>Workspace</span><b>{workspaceName}</b></div><div><span>Operations type</span><b>{accountProfiles[settings.accountType].label}</b></div><div><span>Cloud state</span><b>{saveState === "saved" ? "Synced" : saveState === "saving" ? "Syncing…" : "Waiting to sync"}</b></div></div><p>Your workspace role controls the navigation and the records you can access. Owners manage revenue and integrations; dispatchers manage daily operations.</p><div className="modal-actions"><button type="button" className="signout-button" onClick={() => { void getSupabaseBrowser()?.auth.signOut(); close(); }}>Sign out</button><button type="button" className="primary-button" onClick={openSettings}>Workspace settings</button></div></> : <><div className="signin-panel"><span>◎</span><div><b>{configured ? "Use your Naviwork workspace" : "Supabase setup required"}</b><p>{configured ? authState === "membership_required" ? "Your sign-in worked, but this email has no active Naviwork workspace membership yet." : "Sign in with Google or request an email magic link. An invited dispatcher activates automatically after sign-in." : "Add the public Supabase URL and anonymous key to enable Google and magic-link sign-in."}</p></div></div>{configured && <label className="field"><span>Work email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@company.com" /></label>}<div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Continue demo</button>{configured ? <><button type="button" className="secondary-button" onClick={signInWithGoogle}>Continue with Google</button><button type="button" className="primary-button" onClick={() => sendMagicLink(email)} disabled={!email.includes("@")}>Email me a link</button></> : <button type="button" className="primary-button" onClick={close}>Close</button>}</div></>}</ModalShell>;
+}
+
+function DispatchModal({ title, setTitle, neighborhood, setNeighborhood, close, create }: { title: string; setTitle: (value: string) => void; neighborhood: string; setNeighborhood: (value: string) => void; close: () => void; create: () => void }) {
+  return <ModalShell eyebrow="NEW DISPATCH" title="Open an assignment" close={close}><p>Create an operational record before it enters the open queue. A signed-in workspace is required so the assignment is visible to the whole team.</p><label className="field"><span>Dispatch title</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Priority service call" /></label><label className="field"><span>Area</span><input value={neighborhood} onChange={(event) => setNeighborhood(event.target.value)} /></label><div className="modal-actions"><button type="button" className="secondary-button" onClick={close}>Cancel</button><button type="button" className="primary-button" onClick={create} disabled={!title.trim()}>Create dispatch</button></div></ModalShell>;
 }
 
 function ModalShell({ eyebrow, title, close, children }: { eyebrow: string; title: string; close: () => void; children: React.ReactNode }) {
-  return <div className="modal-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close dialog" /><section className="modal-card" role="dialog" aria-modal="true" aria-label={title}><header><div><span>{eyebrow}</span><h2>{title}</h2></div><button type="button" onClick={close} aria-label="Close dialog">×</button></header>{children}</section></div>;
+  const dialogRef = useRef<HTMLElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const dialog = dialogRef.current;
+    const focusable = () => dialog ? Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')) : [];
+    const first = focusable()[0];
+    first?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const elements = focusable(); if (!elements.length) return;
+      const firstElement = elements[0]; const lastElement = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === firstElement) { event.preventDefault(); lastElement.focus(); }
+      if (!event.shiftKey && document.activeElement === lastElement) { event.preventDefault(); firstElement.focus(); }
+    };
+    dialog?.addEventListener("keydown", onKeyDown);
+    return () => { dialog?.removeEventListener("keydown", onKeyDown); returnFocus.current?.focus(); };
+  }, []);
+  return <div className="modal-scrim"><button type="button" className="scrim-close" onClick={close} aria-label="Close dialog" /><section ref={dialogRef} className="modal-card" role="dialog" aria-modal="true" aria-label={title}><header><div><span>{eyebrow}</span><h2>{title}</h2></div><button type="button" onClick={close} aria-label="Close dialog">×</button></header>{children}</section></div>;
 }

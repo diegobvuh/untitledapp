@@ -19,15 +19,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
   const image = `${protocol}://${host}/og-dispatch.png`;
   return {
-    title: "Naviwork — Field Operations Command Center",
-    description: "A map-first live dispatch console for field service, last-mile delivery, freight fleets, and public works operations.",
+    title: "Naviwork — Owner & Dispatch Command Center",
+    description: "A role-aware field command center for owners and dispatchers, with priority queues, dispatch control, and team communication.",
     applicationName: "Naviwork",
     manifest: "/site.webmanifest",
     formatDetection: { telephone: false, email: false, address: false },
     appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Naviwork" },
     icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/og.png" },
-    openGraph: { title: "Naviwork — Live Dispatch Control", description: "A map-first dispatch cockpit for service and logistics operations.", images: [image] },
-    twitter: { card: "summary_large_image", title: "Naviwork — Live Dispatch Control", description: "A map-first dispatch cockpit for service and logistics operations.", images: [image] },
+    openGraph: { title: "Naviwork — Owner & Dispatch Command Center", description: "A role-aware command cockpit for service and logistics operations.", images: [image] },
+    twitter: { card: "summary_large_image", title: "Naviwork — Owner & Dispatch Command Center", description: "A role-aware command cockpit for service and logistics operations.", images: [image] },
   };
 }
 
