@@ -36,11 +36,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabaseConfig = JSON.stringify({
+    url: process.env.VITE_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    anonKey: process.env.VITE_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+  }).replace(/</g, "\\u003c");
+
   return (
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#e5e4df" />
+        <script dangerouslySetInnerHTML={{ __html: `window.__NAVIWORK_SUPABASE__=${supabaseConfig};` }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

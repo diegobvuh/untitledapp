@@ -200,7 +200,7 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [workspaceRole, setWorkspaceRole] = useState<WorkspaceRole>("owner");
   const [workspaceName, setWorkspaceName] = useState("Bay Breeze Mechanical");
-  const [authState, setAuthState] = useState<"loading" | "signed_out" | "ready" | "membership_required" | "setup_required">(() => isSupabaseConfigured ? "loading" : "setup_required");
+  const [authState, setAuthState] = useState<"loading" | "signed_out" | "ready" | "membership_required" | "setup_required">(() => isSupabaseConfigured() ? "loading" : "setup_required");
   const [dispatchTitle, setDispatchTitle] = useState("");
   const [dispatchNeighborhood, setDispatchNeighborhood] = useState("Hayward");
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -295,7 +295,7 @@ export default function Home() {
   const sendMagicLink = async (email: string) => {
     const supabase = getSupabaseBrowser();
     if (!supabase) { showNotice("Add Supabase browser settings before enabling sign-in."); return; }
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin, shouldCreateUser: false } });
     showNotice(error ? error.message : "Magic link sent. Check your email to continue.");
   };
 
@@ -539,7 +539,7 @@ export default function Home() {
       {modal === "invoice" && <InvoiceModal invoice={selectedInvoice} close={() => setModal(null)} sendReminder={sendReminder} markPaid={() => { setInvoices((current) => current.map((invoice) => invoice.id === selectedInvoice.id ? { ...invoice, state: "Paid" } : invoice)); setModal(null); showNotice(`Invoice #${selectedInvoice.id} marked paid.`); }} />}
       {modal === "crew" && <CrewModal crew={selectedCrew} close={() => setModal(null)} openMap={() => { setModal(null); goTo("MAP"); }} message={() => { setModal("message"); }} />}
       {modal === "message" && <MessageModal crew={selectedCrew} value={crewMessage} setValue={setCrewMessage} close={() => setModal(null)} send={() => { setCrewMessage(""); setModal(null); showNotice(`Message sent to ${selectedCrew.name}.`); }} />}
-      {modal === "account" && <AccountModal user={currentUser} settings={settings} saveState={saveState} authState={authState} workspaceName={workspaceName} configured={isSupabaseConfigured} close={() => setModal(null)} openSettings={() => { setModal(null); goTo("SETTINGS"); }} signInWithGoogle={signInWithGoogle} sendMagicLink={sendMagicLink} />}
+      {modal === "account" && <AccountModal user={currentUser} settings={settings} saveState={saveState} authState={authState} workspaceName={workspaceName} configured={isSupabaseConfigured()} close={() => setModal(null)} openSettings={() => { setModal(null); goTo("SETTINGS"); }} signInWithGoogle={signInWithGoogle} sendMagicLink={sendMagicLink} />}
       {modal === "dispatch" && <DispatchModal title={dispatchTitle} setTitle={setDispatchTitle} neighborhood={dispatchNeighborhood} setNeighborhood={setDispatchNeighborhood} close={() => setModal(null)} create={submitDispatch} />}
       {notice && <div className="toast" role="status"><span>✓</span>{notice}</div>}
     </main>
