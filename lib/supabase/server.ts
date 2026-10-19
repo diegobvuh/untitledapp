@@ -27,7 +27,15 @@ export type WorkspaceRole = "owner" | "dispatcher";
 export async function resolveMembership(request: Request) {
   const user = await authenticatedUser(request);
   if (!user) return null;
-  const db = getServiceSupabase();
+  const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+  if (!token || !url || !anonKey) return null;
+  // This lookup intentionally uses the member's token. It proves that the
+  // workspace RLS policy grants this signed-in user access before any
+  // privileged server-side work is attempted.
+  const db = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
   const { data, error } = await db
     .from("workspace_memberships")
     .select("workspace_id, role, status")
