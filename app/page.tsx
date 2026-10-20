@@ -35,7 +35,7 @@ type Invoice = {
   state: "Paid" | "Due today" | "Draft" | "Reminder sent";
 };
 
-type IntegrationKey = "mapbox" | "stripe" | "quickbooks" | "calendar";
+type IntegrationKey = "stripe" | "quickbooks" | "calendar";
 type ChannelId = "dispatch" | "field" | "maintenance" | "leadership";
 type TeamMessage = { id: string; channel: ChannelId; author: string; initials: string; role: string; body: string; time: string; urgent?: boolean; reactions: number; pinned?: boolean };
 
@@ -68,16 +68,16 @@ const defaultSettings: AppSettings = {
   compact: false,
   motion: true,
   sound: false,
-  integrations: { mapbox: false, stripe: false, quickbooks: false, calendar: false },
+  integrations: { stripe: false, quickbooks: false, calendar: false },
 };
 
 const navItems: Array<{ id: View; label: string; icon: string; hint: string }> = [
   { id: "MAP", label: "Dispatch", icon: "⌖", hint: "Live operations board" },
   { id: "COMMS", label: "Team comms", icon: "◍", hint: "Channels & handoffs" },
   { id: "COMMAND", label: "Overview", icon: "◉", hint: "Performance & pulse" },
-  { id: "GAPS", label: "Route gaps", icon: "✦", hint: "2 opportunities" },
+  { id: "GAPS", label: "Route gaps", icon: "✦", hint: "Capacity opportunities" },
   { id: "REVENUE", label: "Revenue", icon: "$", hint: "Invoices & payments" },
-  { id: "CREWS", label: "Crews", icon: "◎", hint: "4 active teams" },
+  { id: "CREWS", label: "Crews", icon: "◎", hint: "Team roster" },
   { id: "SETTINGS", label: "Setup", icon: "⚙", hint: "Rules & connections" },
 ];
 
@@ -100,7 +100,7 @@ const initialTeamMessages: TeamMessage[] = [];
 const viewTitles: Record<View, { eyebrow: string; title: string; copy: string }> = {
   COMMAND: { eyebrow: "WORKSPACE OVERVIEW", title: "Welcome to Naviwork.", copy: "Add your business details and connect your own operational data to get started." },
   MAP: { eyebrow: "DISPATCH CHANNEL 01", title: "Live dispatch control", copy: "Your dispatches and field teams will appear here once you add them." },
-  COMMS: { eyebrow: "TEAM RADIO · ALL SYSTEMS ONLINE", title: "Team communications", copy: "Keep every conversation attached to the work, the route, and the people who need it." },
+  COMMS: { eyebrow: "TEAM RADIO · READY FOR SETUP", title: "Team communications", copy: "Keep every conversation attached to the work, the route, and the people who need it." },
   GAPS: { eyebrow: "OPPORTUNITY SCAN", title: "Route gaps", copy: "Review suggested work before anything reaches a customer." },
   REVENUE: { eyebrow: "MONEY FEED", title: "Revenue & collections", copy: "Track today’s value and turn outstanding work into collected revenue." },
   CREWS: { eyebrow: "FIELD CHANNEL", title: "Crews", copy: "See who is moving, who is free, and what each team needs next." },
@@ -294,7 +294,7 @@ export default function Home() {
 
   const toggleIntegration = (key: IntegrationKey) => {
     const provider = key === "calendar" ? "google_calendar" : key === "quickbooks" ? "quickbooks" : null;
-    if (!provider) { showNotice(key === "mapbox" ? "Mapbox is optional. Add a token to enable live maps." : "Stripe is not configured for this workspace. Use QuickBooks for owner finance sync."); return; }
+    if (!provider) { showNotice("Stripe is not configured for this workspace. Use QuickBooks for owner finance sync."); return; }
     void authorizedFetch(`/api/integrations/${provider}/connect`, { method: "POST" }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Connection could not be started.");
@@ -412,7 +412,7 @@ export default function Home() {
         </nav>
         <div className="sidebar-footer">
           <div className="storage-bar"><span><i /> {saveState === "saved" ? "Workspace synced" : "Saved on device"}</span></div>
-          <button type="button" onClick={syncNow} className={syncing ? "syncing" : ""}><i>↻</i><span><b>{syncing ? "Syncing…" : "Sync now"}</b><small>Last sync · just now</small></span></button>
+          <button type="button" onClick={syncNow} className={syncing ? "syncing" : ""}><i>↻</i><span><b>{syncing ? "Syncing…" : "Sync now"}</b><small>{saveState === "saved" ? "Workspace connected" : "No sync completed"}</small></span></button>
         </div>
       </aside>
 
@@ -450,7 +450,8 @@ export default function Home() {
               createdDispatch={createdDispatch}
               createDispatch={() => setModal("dispatch")}
               openMessage={() => setModal("message")}
-            /> : <EmptyState eyebrow="DISPATCH IS CLEAR" title="No crews or dispatch data yet" copy="Add your business profile, connect your systems, and create your first dispatch when you are ready." action="Open setup" onAction={() => goTo("SETTINGS")} secondary="Create dispatch" onSecondary={() => setModal("dispatch")} />
+            homeBase={settings.homeBase}
+            /> : <MapEmptyView homeBase={settings.homeBase} zoom={mapZoom} setZoom={setMapZoom} recenterKey={recenterKey} goToSetup={() => goTo("SETTINGS")} />
           )}
           {active === "COMMS" && <TeamCommsView messages={teamMessages} channel={selectedChannel} setChannel={setSelectedChannel} draft={teamDraft} setDraft={setTeamDraft} urgent={messageUrgent} toggleUrgent={() => setMessageUrgent((current) => !current)} huddleActive={huddleActive} toggleHuddle={() => { setHuddleActive((current) => !current); playCue("radio"); }} sendMessage={sendTeamMessage} reactToMessage={reactToMessage} pinMessage={pinMessage} attachRoute={() => showNotice("Create a dispatch before attaching a route.")} addVoiceNote={() => sendTeamMessage("Voice note attached.")} createHandoff={() => sendTeamMessage("Shift handoff started.", true)} goTo={goTo} />}
           {active === "GAPS" && <EmptyState eyebrow="NO OPPORTUNITIES" title="No route gaps to review" copy="Opportunities will appear after your schedules, customers, and crews are connected." action="Manage connections" onAction={() => { setSettingsTab("CONNECTIONS"); goTo("SETTINGS"); }} />}
@@ -532,7 +533,15 @@ function AccessGate({ state, signInWithGoogle, sendMagicLink }: { state: string;
   </main>;
 }
 
-function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, setZoom, recenterKey, showNotice, accountType, selectedDispatchId, selectDispatch, assignedDispatches, assignDispatch, createdDispatch, createDispatch, openMessage }: { layer: MapLayer; setLayer: (layer: MapLayer) => void; selectedCrew: Crew; selectCrew: (id: string) => void; openCrew: () => void; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; showNotice: (text: string) => void; accountType: AccountType; selectedDispatchId: string; selectDispatch: (id: string, crewId: string) => void; assignedDispatches: string[]; assignDispatch: (id: string) => void; createdDispatch: boolean; createDispatch: () => void; openMessage: () => void }) {
+function MapEmptyView({ homeBase, zoom, setZoom, recenterKey, goToSetup }: { homeBase: string; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; goToSetup: () => void }) {
+  return <section className="camera-panel map-panel workspace-map-empty">
+    <div className="map-toolbar"><span className="map-empty-label">WORKSPACE MAP · PRIVATE TO THIS ACCOUNT</span><div className="map-tools"><button type="button" onClick={() => setZoom(Math.min(1.35, zoom + .1))} aria-label="Zoom in">＋</button><button type="button" onClick={() => setZoom(Math.max(.8, zoom - .1))} aria-label="Zoom out">−</button></div></div>
+    <div className="map-frame"><MapViewport layer="CREWS" selectedCrewId="" onSelectCrew={() => undefined} zoom={zoom} recenterKey={recenterKey} homeBase={homeBase} /><div className="map-reticle" aria-hidden="true"><i /><i /></div><div className="north-indicator">N<br />↑</div><div className="map-empty-card"><span>MAP READY</span><b>{homeBase ? `Centered on ${homeBase}` : "Set your operating area"}</b><small>{homeBase ? "This map belongs to your workspace. Crews and dispatches will appear only after you add them." : "Add a home base so Naviwork can calibrate this workspace map."}</small>{!homeBase && <button type="button" className="primary-button" onClick={goToSetup}>Set home base</button>}</div></div>
+    <div className="map-status"><span><i /> MAP SERVICE ONLINE</span><b>{homeBase || "OPERATING AREA REQUIRED"}</b></div>
+  </section>;
+}
+
+function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, setZoom, recenterKey, showNotice, accountType, selectedDispatchId, selectDispatch, assignedDispatches, assignDispatch, createdDispatch, createDispatch, openMessage, homeBase }: { layer: MapLayer; setLayer: (layer: MapLayer) => void; selectedCrew: Crew; selectCrew: (id: string) => void; openCrew: () => void; zoom: number; setZoom: (zoom: number) => void; recenterKey: number; showNotice: (text: string) => void; accountType: AccountType; selectedDispatchId: string; selectDispatch: (id: string, crewId: string) => void; assignedDispatches: string[]; assignDispatch: (id: string) => void; createdDispatch: boolean; createDispatch: () => void; openMessage: () => void; homeBase: string }) {
   const [routeAssist, setRouteAssist] = useState(true);
   const [queueMode, setQueueMode] = useState<"open" | "assigned">("open");
   const profile = accountProfiles[accountType];
@@ -561,8 +570,8 @@ function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, se
           <div className="map-readout-pilot"><span>LAT —</span><span>LON —</span><b>NO LOCATION</b></div>
           <div className="map-tools"><button type="button" onClick={() => setZoom(Math.min(1.35, zoom + 0.1))} aria-label="Zoom in">＋</button><button type="button" onClick={() => setZoom(Math.max(.8, zoom - 0.1))} aria-label="Zoom out">−</button><button type="button" onClick={() => { setZoom(1); showNotice("Map reset."); }} aria-label="Fit map">⌖</button></div>
         </div>
-        <div className="map-frame"><MapViewport layer={layer} selectedCrewId={selectedCrew.id} onSelectCrew={selectCrew} zoom={zoom} recenterKey={recenterKey} /><div className="map-reticle" aria-hidden="true"><i /><i /></div><div className="north-indicator">N<br />↑</div><div className="dispatch-tag"><span>{activeDispatch.priority}</span><b>{activeDispatch.id}</b><small>{activeDispatch.title}</small></div></div>
-        <div className="map-status"><span><i /> GPS STANDBY · {crews.length} REPORTING</span><b>NO OPERATING AREA SET</b></div>
+        <div className="map-frame"><MapViewport layer={layer} selectedCrewId={selectedCrew.id} onSelectCrew={selectCrew} zoom={zoom} recenterKey={recenterKey} homeBase={homeBase} /><div className="map-reticle" aria-hidden="true"><i /><i /></div><div className="north-indicator">N<br />↑</div><div className="dispatch-tag"><span>{activeDispatch.priority}</span><b>{activeDispatch.id}</b><small>{activeDispatch.title}</small></div></div>
+        <div className="map-status"><span><i /> WORKSPACE MAP · {crews.length} REPORTING</span><b>{homeBase || "SET HOME BASE IN SETUP"}</b></div>
       </section>
 
       <aside className="camera-panel unit-console">
@@ -586,7 +595,7 @@ function MapView({ layer, setLayer, selectedCrew, selectCrew, openCrew, zoom, se
   );
 }
 
-function MapViewport({ layer, selectedCrewId, onSelectCrew, zoom, recenterKey }: { layer: MapLayer; selectedCrewId: string; onSelectCrew: (id: string) => void; zoom: number; recenterKey: number }) {
+function MapViewport({ layer, selectedCrewId, onSelectCrew, zoom, recenterKey, homeBase }: { layer: MapLayer; selectedCrewId: string; onSelectCrew: (id: string) => void; zoom: number; recenterKey: number; homeBase: string }) {
   const element = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -641,12 +650,12 @@ function MapViewport({ layer, selectedCrewId, onSelectCrew, zoom, recenterKey }:
       <div className="map-paper">
         <div className="water"><span>SAN FRANCISCO BAY</span></div>
         <i className="road r-a" /><i className="road r-b" /><i className="road r-c" /><i className="road r-d" />
-        <span className="map-label l-downtown">ADD YOUR<br />HOME BASE</span>
+        <span className="map-label l-downtown">{homeBase ? homeBase.toUpperCase() : "SET YOUR"}<br />{homeBase ? "WORKSPACE MAP" : "HOME BASE"}</span>
         {layer === "CREWS" && crews.map((crew) => <button type="button" key={crew.id} className={`fallback-pin crew ${selectedCrewId === crew.id ? "selected" : ""}`} style={crew.pin} onClick={() => onSelectCrew(crew.id)} aria-label={`Select ${crew.name}`}><b>{crew.id}</b><small>{crew.status}</small></button>)}
         {layer === "JOBS" && jobs.map((job) => <div key={job.id} className="fallback-pin job" style={job.pin}><b>{job.id}</b><small>{job.label}</small></div>)}
         {layer === "GAPS" && <div className="gap-bubble gap-one"><b>—</b><small>No openings</small></div>}
       </div>
-      <div className="fallback-note">EMPTY MAP · CONNECT MAPBOX AND ADD YOUR OPERATING AREA</div>
+      <div className="fallback-note">{homeBase ? `${homeBase.toUpperCase()} · PRIVATE WORKSPACE MAP` : "WORKSPACE MAP · SET A HOME BASE TO CALIBRATE"}</div>
     </div>
   );
 }
@@ -740,15 +749,19 @@ function SettingsView({ tab, setTab, settings, updateSettings, toggleIntegration
         {tab === "PROFILE" && <><SettingsHeading title="Business profile" copy="Add the details for this owner's operation. New workspaces start empty." /><div className="field-pair"><label className="field"><span>Business name</span><input value={settings.businessName} onChange={(event) => updateSettings("businessName", event.target.value)} placeholder="Enter business name" /></label><label className="field"><span>Account type</span><select value={settings.accountType} onChange={(event) => updateSettings("accountType", event.target.value as AccountType)}>{(Object.keys(accountProfiles) as AccountType[]).map((type) => <option key={type} value={type}>{accountProfiles[type].label}</option>)}</select></label></div><div className="account-preview"><span>ACTIVE OPERATIONS PROFILE</span><b>{settings.businessName || "Not named yet"}</b><small>{accountProfiles[settings.accountType].people} · {accountProfiles[settings.accountType].work} · {accountProfiles[settings.accountType].exception}</small></div><div className="field-pair"><label className="field"><span>Home base</span><input value={settings.homeBase} onChange={(event) => updateSettings("homeBase", event.target.value)} placeholder="City, state or service area" /></label><label className="field"><span>Operating radius</span><select value={settings.serviceRadius} onChange={(event) => updateSettings("serviceRadius", Number(event.target.value))}><option value={0}>Not set</option><option value={12}>12 miles</option><option value={18}>18 miles</option><option value={25}>25 miles</option></select></label></div><button type="button" className="customize-row" onClick={openCustomizer}><span><i>◐</i><b>Appearance</b><small>{settings.theme} theme · {settings.compact ? "compact" : "comfortable"}</small></span><em>Customize ›</em></button></>}
         {tab === "FIELD OPS" && <><SettingsHeading title="Field operations" copy="Control dispatch behavior and the workday guardrails." /><div className="choice-grid"><button type="button" className={settings.dispatchMode === "Approval first" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Approval first")}><i>✓</i><b>Approval first</b><small>A dispatcher approves route changes.</small></button><button type="button" className={settings.dispatchMode === "Auto-dispatch" ? "active" : ""} onClick={() => updateSettings("dispatchMode", "Auto-dispatch")}><i>⚡</i><b>Auto-dispatch</b><small>Qualified gaps can be filled automatically.</small></button></div><div className="field-pair"><label className="field"><span>Day starts</span><input type="time" value={settings.startHour} onChange={(event) => updateSettings("startHour", event.target.value)} /></label><label className="field"><span>Day ends</span><input type="time" value={settings.endHour} onChange={(event) => updateSettings("endHour", event.target.value)} /></label></div><div className="info-note"><i>i</i><span><b>{settings.homeBase || "Operating area not set"}</b><small>{settings.serviceRadius ? `${settings.serviceRadius}-mile service radius.` : "Add a home base and operating radius in Business profile."}</small></span></div></>}
         {tab === "OUTREACH" && <><SettingsHeading title="Customer outreach" copy="Choose how suggested messages are handled." /><ToggleRow label="Enable gap-fill outreach" copy="Show eligible customers when a route opening appears." value={settings.outreachEnabled} toggle={() => updateSettings("outreachEnabled", !settings.outreachEnabled)} /><div className="message-template"><span>EARLIER APPOINTMENT TEMPLATE</span><p>Hi {'{first name}'} — we have an earlier opening today at {'{time}'}. Would you like us to move up your {'{service}'}? Reply YES to accept.</p><small>Variables are filled automatically. Every message remains editable before sending.</small></div></>}
-        {tab === "CONNECTIONS" && <><SettingsHeading title="Connections" copy="Owners can securely connect calendars and accounting. Statuses come from the workspace, never from a demo toggle." /><div className="integration-grid"><IntegrationCard id="mapbox" name="Mapbox" category="Optional maps & routing" connected={settings.integrations.mapbox} toggle={() => toggleIntegration("mapbox")} /><IntegrationCard id="calendar" name="Google Calendar" category="Jobs & availability" connected={settings.integrations.calendar} toggle={() => toggleIntegration("calendar")} /><IntegrationCard id="stripe" name="Stripe" category="Not enabled in this workspace" connected={false} toggle={() => toggleIntegration("stripe")} /><IntegrationCard id="quickbooks" name="QuickBooks" category="Invoices & accounting" connected={settings.integrations.quickbooks} toggle={() => toggleIntegration("quickbooks")} /></div><p className="integration-note">OAuth tokens are encrypted server-side. Sync, stale-data, and error states are recorded in the workspace once provider secrets are configured.</p></>}
+        {tab === "CONNECTIONS" && <><SettingsHeading title="Connections" copy="Maps are built into every secure workspace. Connect calendars and accounting when you are ready." /><div className="integration-grid"><BuiltInMapCard homeBase={settings.homeBase} /><IntegrationCard id="calendar" name="Google Calendar" category="Jobs & availability" connected={settings.integrations.calendar} toggle={() => toggleIntegration("calendar")} /><IntegrationCard id="stripe" name="Stripe" category="Not enabled in this workspace" connected={false} toggle={() => toggleIntegration("stripe")} /><IntegrationCard id="quickbooks" name="QuickBooks" category="Invoices & accounting" connected={settings.integrations.quickbooks} toggle={() => toggleIntegration("quickbooks")} /></div><p className="integration-note">Each workspace has its own map and operational records. Calendar and accounting connections are optional and secured server-side.</p></>}
       </section>
     </div>
   );
 }
 
 function IntegrationCard({ id, name, category, connected, toggle }: { id: IntegrationKey; name: string; category: string; connected: boolean; toggle: () => void }) {
-  const marks: Record<IntegrationKey, string> = { mapbox: "M", stripe: "S", quickbooks: "qb", calendar: "31" };
-  return <article className={connected ? "integration-card connected" : "integration-card"}><div className={`integration-mark ${id}`}>{marks[id]}</div><div><b>{name}</b><small>{category}</small></div><span><i /> {connected ? "Connected" : "Not connected"}</span><button type="button" onClick={toggle}>{connected ? "View status" : id === "mapbox" || id === "stripe" ? "Learn more" : "Connect"}</button></article>;
+  const marks: Record<IntegrationKey, string> = { stripe: "S", quickbooks: "qb", calendar: "31" };
+  return <article className={connected ? "integration-card connected" : "integration-card"}><div className={`integration-mark ${id}`}>{marks[id]}</div><div><b>{name}</b><small>{category}</small></div><span><i /> {connected ? "Connected" : "Not connected"}</span><button type="button" onClick={toggle}>{connected ? "View status" : id === "stripe" ? "Learn more" : "Connect"}</button></article>;
+}
+
+function BuiltInMapCard({ homeBase }: { homeBase: string }) {
+  return <article className="integration-card connected built-in-map-card"><div className="integration-mark map">⌖</div><div><b>Naviwork Maps</b><small>{homeBase ? `Scoped to ${homeBase}` : "Set a home base to calibrate"}</small></div><span><i /> Always on</span><em>Built in</em></article>;
 }
 
 function PanelHeader({ label, detail }: { label: string; detail: string }) {
