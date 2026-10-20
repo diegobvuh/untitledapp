@@ -8,7 +8,10 @@ export async function GET(request: Request) {
   const [dispatches, crews, messages, integrations, priorities, workspace] = await Promise.all([
     db.from("dispatches").select("id, code, title, priority, status, neighborhood, eta_minutes, assigned_crew_id, created_at").eq("workspace_id", membership.workspaceId).order("created_at", { ascending: false }).limit(30),
     db.from("crew_activity").select("id, crew_name, vehicle, status, neighborhood, assignment, updated_at").eq("workspace_id", membership.workspaceId).order("updated_at", { ascending: false }).limit(30),
-    db.from("messages").select("id, channel, body, priority, created_at, profiles(full_name, email)").eq("workspace_id", membership.workspaceId).order("created_at", { ascending: false }).limit(100),
+    // Profiles are intentionally private to their owners. Do not join them into
+    // the workspace feed: that would make a successful sign-in look like a
+    // failed session when the profile policy correctly rejects the relation.
+    db.from("messages").select("id, channel, body, priority, created_at").eq("workspace_id", membership.workspaceId).order("created_at", { ascending: false }).limit(100),
     db.from("integration_connections").select("provider, status, last_synced_at, last_error").eq("workspace_id", membership.workspaceId),
     membership.role === "owner" ? db.from("owner_priorities").select("id, kind, title, detail, action, severity, created_at").eq("workspace_id", membership.workspaceId).eq("resolved", false).order("severity", { ascending: false }).limit(10) : Promise.resolve({ data: [], error: null }),
     db.from("workspaces").select("settings").eq("id", membership.workspaceId).maybeSingle(),
@@ -30,7 +33,8 @@ export async function POST(request: Request) {
     return Response.json({ ok: true });
   }
   if (body.action === "create" && body.title?.trim()) {
-    const { data, error } = await db.from("dispatches").insert({ workspace_id: membership.workspaceId, code: `D-${Date.now().toString().slice(-5)}`, title: body.title.trim(), neighborhood: body.neighborhood?.trim() || "Hayward", priority: "P2", status: "open", created_by: membership.user.id }).select().single();
+    if (!body.neighborhood?.trim()) return Response.json({ error: "Dispatch area is required." }, { status: 400 });
+    const { data, error } = await db.from("dispatches").insert({ workspace_id: membership.workspaceId, code: `D-${Date.now().toString().slice(-5)}`, title: body.title.trim(), neighborhood: body.neighborhood.trim(), priority: "P2", status: "open", created_by: membership.user.id }).select().single();
     if (error) return Response.json({ error: error.message }, { status: 400 });
     return Response.json({ ok: true, dispatch: data });
   }
